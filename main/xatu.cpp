@@ -25,6 +25,7 @@ int main(int argc, char* argv[]){
     TCLAP::ValueArg<int>    precisionArg("p", "precision", "Desired energy precision. Used to compute degeneracies.", false, 6, "No. decimals", cmd);
     TCLAP::SwitchArg        spinArg("s", "spin", "Compute exciton spin and write it to file.", cmd, false);
     TCLAP::ValueArg<int>    dftArg("d", "dft", "Indicates that the system file is a .outp CRYSTAL file.", false, -1, "No. Fock matrices", cmd);
+    TCLAP::ValueArg<int>    w90Arg("w", "w90", "Indicates that the system file is a tb.dat Wannier90 file.", false, -1, "No. electrons  ", cmd);
     TCLAP::SwitchArg        absorptionArg("a", "absorption", "Computes the absorption spectrum.", cmd, false);
     TCLAP::ValueArg<std::string> formatArg("f", "format", "Format of the input system file.", false, "model", "model or hdf5", cmd);
 
@@ -76,6 +77,8 @@ int main(int argc, char* argv[]){
 
     if (dftArg.isSet()){
         systemConfig.reset(new xatu::CRYSTALConfiguration(systemfile, ncells));
+    } else if (w90Arg.isSet()){
+        systemConfig.reset(new xatu::Wannier90Configuration(systemfile, electronNum));
     }
     else{
         if (format == "hdf5"){

@@ -1,13 +1,14 @@
 #pragma once
 #include "xatu/SystemConfiguration.hpp"
 
+typedef std::vector<std::vector<std::vector<double>>> cube_vector;
 
 namespace xatu {
 
 class Wannier90Configuration : public SystemConfiguration {
 
     public:
-        int nFock, ndim;
+        int nFock, ndim, electronNum;
         arma::mat Rn;                // Real-space lattice vectors (3x3)
         arma::colvec iRn;            // index of neighbors
         arma::cx_cube H;             // Hamiltonian cube (nFock, ndim, ndim)

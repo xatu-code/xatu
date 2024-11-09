@@ -51,6 +51,7 @@ int main(int argc, char* argv[]){
     // Extract information from parsed CLI options
     int nstates        = statesArg.getValue();
     int ncells         = dftArg.getValue();
+    int electronNum    = w90Arg.getValue();
     int decimals       = precisionArg.getValue();
     std::string method = methodArg.getValue();
     std::vector<int> rsInfo = realspaceArg.getValue();

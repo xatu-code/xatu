@@ -43,9 +43,9 @@ namespace xatu {
             std::istringstream iss(line);
             iss >> Rn(i, 0) >> Rn(i, 1) >> Rn(i, 2);
             // Ensure we have exactly three values in each line
-            if (!(iss >> Rn(i, 0) >> Rn(i, 1) >> Rn(i, 2))) {
-                throw std::runtime_error("Error reading Rn matrix values from file.");
-            }
+            // if (!(iss >> Rn(i, 0) >> Rn(i, 1) >> Rn(i, 2))) {
+            //     throw std::runtime_error("Error reading Rn matrix values from file.");
+            // }
         }
 
         // Parse ndim and nFock values
@@ -54,7 +54,7 @@ namespace xatu {
         
         std::getline(m_file, line);  // Move to the next line
         
-        std::istringstream iss(line);
+        // std::istringstream iss(line);
         iss >> nFock;
         
         std::getline(m_file, line);  // Move to the next line
@@ -62,10 +62,13 @@ namespace xatu {
 
         // Allocate matrices and vectors based on parsed sizes
         H = arma::cx_cube(nFock, ndim, ndim, arma::fill::zeros);
-        Rhop = arma::cx_mat(3, nFock, ndim, ndim, arma::fill::zeros);
         Degen = arma::colvec(nFock, arma::fill::zeros); // armadillo is faster with columns
         iRn = arma::colvec(nFock, 3, arma::fill::zeros);
 
+        //Rhop = arma::cx_cube(3, nFock, ndim, ndim, arma::fill::zeros); // don't work on armadillo
+        Rhop = arma::cx_cube(3, nFock, ndim * ndim, arma::fill::zeros); // option 1: flatten one axis
+        // option 2: nested vectors
+        // std::vector<std::vector<arma::cx_mat>> Rhop(3, std::vector<arma::cx_mat>(nFock, arma::cx_mat(ndim, ndim, arma::fill::zeros)));
 
         // parsing DEGENERACIES
         int degenPerLine = 15;
@@ -99,7 +102,8 @@ namespace xatu {
             for (int row = 0; row < ndim; ++row) {
                 for (int col = 0; col < ndim; ++col) {
                     double R, Im;
-                    fileStream >> R >> Im;
+                    std::istringstream iss(line);
+                    iss >> R >> Im;
                     H(i, row, col) = std::complex<double>(R, Im);
                 }
             }
@@ -109,30 +113,36 @@ namespace xatu {
 
         // Parse orbital localization data (Rhop) - diagonal is motif
         for (int i = 0; i < nFock; ++i) {
-            std::getline(m_file, line); // Skip iRn line for Rhop
+            std::getline(m_file, line);  // Skip iRn line for Rhop
+
             for (int ii = 0; ii < ndim; ++ii) {
                 for (int jj = 0; jj < ndim; ++jj) {
-                    double a1, a1j, a2, a2j, a3, a3j;
+                    std::getline(m_file, line);
                     std::istringstream iss(line);
+
+                    double a1, a1j, a2, a2j, a3, a3j;
                     iss >> a1 >> a1j >> a2 >> a2j >> a3 >> a3j;
-                    Rhop(0, i, ii, jj) = std::complex<double>(a1, a1j);
-                    Rhop(1, i, ii, jj) = std::complex<double>(a2, a2j);
-                    Rhop(2, i, ii, jj) = std::complex<double>(a3, a3j);
+
+                    // Flatten last two indices ii, jj to a single (ii * ndim + jj) index
+                    Rhop(0, i, ii * ndim + jj) = std::complex<double>(a1, a1j);
+                    Rhop(1, i, ii * ndim + jj) = std::complex<double>(a2, a2j);
+                    Rhop(2, i, ii * ndim + jj) = std::complex<double>(a3, a3j);
                 }
             }
-            if (i < nFock - 1) std::getline(m_file, line); // Skip blank line if not last
+
+            if (i < nFock - 1) std::getline(m_file, line);  // Skip blank line if not last
         }
 
-        // Extract diagonal of Rhop into motif vector
-        motif = arma::colvec(3, nFock, arma::fill::zeros);
+        // Ensure motif is complex to handle the complex entries from Rhop
+        motif = arma::mat(3, nFock, arma::fill::zeros);
+
         for (int i = 0; i < nFock; ++i) {
             for (int k = 0; k < ndim; ++k) {
-                motif(0,i) = Rhop(0, i, k, k);
-                motif(1,i) = Rhop(1, i, k, k);
-                motif(2,i) = Rhop(2, i, k, k);
+                motif(0, i) = std::real(Rhop(0, i, k * ndim + k));  // Diagonal element for Rhop(0)
+                motif(1, i) = std::real(Rhop(1, i, k * ndim + k));  // Diagonal element for Rhop(1)
+                motif(2, i) = std::real(Rhop(2, i, k * ndim + k));  // Diagonal element for Rhop(2)
             }
         }
-
 
 
         m_file.close();
@@ -149,7 +159,7 @@ namespace xatu {
      * Method to write all the extracted information into a struct.
      * @return void 
      */
-    void Wannier90Configuration::mapContent(bool debug, electronNum) {
+    void Wannier90Configuration::mapContent(bool debug, int electronNum) {
         
         // Fill in the system info structure with relevant data
     /**
@@ -167,8 +177,8 @@ namespace xatu {
         systemInfo.bravaisVectors = Rn;          // Store bravais vectors
         systemInfo.motif = motif;                // Store motif localization data
         systemInfo.hamiltonian = H;              // Store Hamiltonian
-        systemInfo.overlap = Rhop;               // ? check this
-        systemInfo.filling = electronNum        /* missing --> totalElectrons on w90 file */
+        // systemInfo.overlap = Rhop;               // ? check this
+        systemInfo.filling = electronNum;        /* missing --> totalElectrons on w90 file */
 
         // Debug output
         if (debug) {

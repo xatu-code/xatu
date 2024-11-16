@@ -19,7 +19,7 @@ namespace xatu {
      */
     Wannier90Configuration::Wannier90Configuration(std::string file, int electronNum) : ConfigurationBase{file} {
         parseContent();
-        mapContent();
+        mapContent(electronNum);
     }
 
     /**
@@ -48,14 +48,23 @@ namespace xatu {
             Rn(i, 1) = val2;
             Rn(i, 2) = val3;
 
-            std::cout << "Line " << i+1 << ": " << line << std::endl;
+            // std::cout << "Line " << i+1 << ": " << line << std::endl;
         }
+
+        if (Rn(2,0) == 0 && Rn(2,1) == 0) {
+            ndim = 2;
+            if (Rn(1,0) == 0 && Rn(1,1) == 0) {
+                ndim = 1;
+            }
+        }
+
+
         std::getline(m_file, line);  // Move to the next line
 
         // Parse ndim and nFock values 
         std::istringstream iss(line);
         iss >> mSize; // this is not ndim!!
-        std::cout << "mSize: " << mSize << std::endl;
+        // std::cout << "mSize: " << mSize << std::endl;
         iss.clear();  // Clear any flags (like EOF)
 
 
@@ -64,25 +73,20 @@ namespace xatu {
 
         std::istringstream iss2(line);
         iss >> nFock;
-        std::cout << "nFock: " << nFock << std::endl;
+        // std::cout << "nFock: " << nFock << std::endl;
         iss.clear();  // Clear any flags (like EOF)
 
         std::getline(m_file, line);  // Move to the next line
 
         // Allocate matrices and vectors based on parsed sizes
         H = arma::cx_cube(nFock, mSize, mSize, arma::fill::zeros);
-        std::cout << "Declared H matrix... "<< std::endl;
+        // std::cout << "Declared H matrix... "<< std::endl;
 
         Degen = arma::rowvec(nFock, arma::fill::zeros); // armadillo is faster with columns
-        std::cout << "Declared degeneracies... "<< std::endl;
+        // std::cout << "Declared degeneracies... "<< std::endl;
 
-        iRn = arma::mat(nFock, 3, arma::fill::zeros);
-        std::cout << "Declared iRn... "<< std::endl;
-
-        //Rhop = arma::cx_cube(3, nFock, ndim, ndim, arma::fill::zeros); // don't work on armadillo
-        Rhop = arma::cx_cube(3, nFock, mSize * mSize, arma::fill::zeros); // option 1: flatten one axis
-        // option 2: nested vectors
-        // std::vector<std::vector<arma::cx_mat>> Rhop(3, std::vector<arma::cx_mat>(nFock, arma::cx_mat(mSize, mSize, arma::fill::zeros)));
+        iRn = arma::mat(3, nFock, arma::fill::zeros);
+        // std::cout << "Declared iRn... "<< std::endl;
 
         // parsing DEGENERACIES
         int degenPerLine = 15;
@@ -90,82 +94,116 @@ namespace xatu {
 
         // Read full lines of 15 elements
         for (int i = 0; i < nFock / degenPerLine; i++) {
+            std::getline(m_file, line);
             for (int j = 0; j < degenPerLine; j++) {
                 // std::istringstream iss(line);
                 iss.str(line);
                 iss >> Degen[idx];
                 idx++;
+                // std::cout << "Degeneracy regular line:" << line << std::endl;
             }
-            std::getline(m_file, line);
         }
 
         // Read the last partial line if needed
         int remaining = nFock % degenPerLine;
+        if (remaining) {
+            std::getline(m_file, line);
+            // std::cout << "Degeneracy LAST line:" << line << std::endl;
+        }
         for (int j = 0; j < remaining; j++) {
-            // std::istringstream iss(line);
             iss.str(line);
             iss >> Degen[idx];
             idx++;
         }
-        std::getline(m_file, line);  // Move to the next line
 
         //-------------------HAMILTONIAN-------------------------//
         // Parse Hamiltonian (H) data
         for (int i = 0; i < nFock; i++) {
-            std::istringstream iss(line);
-            iss >> iRn(i, 0) >> iRn(i, 1) >> iRn(i, 2);
+            std::getline(m_file, line); // Skip blank line if not the last
+            // std::cout << "iRn:" << line << std::endl;
+            iss.str(line);
+            iss >> iRn(0, i) >> iRn(1, i) >> iRn(2, i);
+            iss.clear(); 
             
             // Loop through rows and columns for mSize x mSize block
-            for (int row = 0; row < mSize; row++) {
-                for (int col = 0; col < mSize; col++) {
+            for (int j = 0; j < mSize; j++) {
+                for (int k = 0; k < mSize; k++) {
+                    std::getline(m_file, line);
+                    iss.str(line);
+
+                    int ii, jj;
                     double R, Im;
-                    std::istringstream iss(line);
-                    iss >> R >> Im;
-                    H(i, row, col) = std::complex<double>(R, Im);
+                    iss >> ii >> jj >> R >> Im;
+                    H(i, ii-1, jj-1) = std::complex<double>(R, Im);
+                    iss.clear(); 
                 }
             }
-            if (i < nFock - 1) std::getline(m_file, line); // Skip blank line if not the last
+            std::getline(m_file, line); // Skip blank line if not the last
         }
+
+        bravaisVectors = arma::mat(nFock, 3, arma::fill::zeros);
+
+        for (int i = 0; i < nFock; i++) {
+            double a1 = iRn(0, i) * Rn(0, 0) + iRn(1, i) * Rn(1, 0) + iRn(2, i) * Rn(2, 0);
+            double a2 = iRn(0, i) * Rn(0, 1) + iRn(1, i) * Rn(1, 1) + iRn(2, i) * Rn(2, 1);
+            double a3 = iRn(0, i) * Rn(0, 2) + iRn(1, i) * Rn(1, 2) + iRn(2, i) * Rn(2, 2);
+
+            bravaisVectors(i, 0) = a1;
+            bravaisVectors(i, 1) = a2;
+            bravaisVectors(i, 2) = a3;
+        }
+
+
+        Rhop = arma::field<arma::cx_cube>(3); // Initialize field with 3 elements
+
+        // Initialize each field element (cx_cube) individually
+        for (int i = 0; i < 3; i++) {
+            Rhop(i) = arma::cx_cube(nFock, mSize, mSize, arma::fill::zeros);
+        }
+        // std::cout << "Declared Rhop... "<< std::endl;
 
 
         //----------------------PosMatrixElements-----------------------------//
         // Parse orbital localization data (Rhop) - diagonal is motif
         for (int i = 0; i < nFock; i++) {
             std::getline(m_file, line);  // Skip iRn line for Rhop
+            iss.clear();
 
-            for (int ii = 0; ii < mSize; ii++) {
-                for (int jj = 0; jj < mSize; jj++) {
-                    std::getline(m_file, line);
-                    std::istringstream iss(line);
+            for (int j = 0; j < mSize; j++) {
+                for (int k = 0; k < mSize; k++) {
+                    std::getline(m_file, line); 
+                    iss.str(line);
 
+                    int ii, jj;
                     double a1, a1j, a2, a2j, a3, a3j;
-                    iss >> a1 >> a1j >> a2 >> a2j >> a3 >> a3j;
-
-                    // Flatten last two indices ii, jj to a single (ii * mSize + jj) index
-                    Rhop(0, i, ii * mSize + jj) = std::complex<double>(a1, a1j);
-                    Rhop(1, i, ii * mSize + jj) = std::complex<double>(a2, a2j);
-                    Rhop(2, i, ii * mSize + jj) = std::complex<double>(a3, a3j);
+                    iss >> ii >> jj >> a1 >> a1j >> a2 >> a2j >> a3 >> a3j;
+                    Rhop(0)(i, jj-1, ii-1) = std::complex<double>(a1, a1j);
+                    Rhop(1)(i, jj-1, ii-1) = std::complex<double>(a2, a2j);
+                    Rhop(2)(i, jj-1, ii-1) = std::complex<double>(a3, a3j);
+                    iss.clear(); 
                 }
             }
 
-            if (i < nFock - 1) std::getline(m_file, line);  // Skip blank line if not last
+            std::getline(m_file, line);  // Skip blank line if not last
         }
+
 
         //----------------------MOTIF-----------------------------//
         // Ensure motif is complex to handle the complex entries from Rhop
-        motif = arma::mat(3, mSize, arma::fill::zeros);
+        motif = arma::mat(mSize, 4, arma::fill::zeros);
         int diag = 0;
         for (int i = 0; i < nFock; i++) {   
-            if (iRn(i, 0) == 0 && iRn(i, 1) == 0 && iRn(i, 2) == 0) {
+            if (iRn(0, i) == 0 && iRn(1, i) == 0 && iRn(2, i) == 0) {
                 diag = i;
                 break;
             }
         }
 
         for (int k = 0; k < mSize; k++) {
-            motif(0, k) = std::real(Rhop(0, diag, k * mSize + k));  // Diagonal element for Rhop(x)
-            motif(1, k) = std::real(Rhop(1, diag, k * mSize + k));  // Diagonal element for Rhop(y)
-            motif(2, k) = std::real(Rhop(2, diag, k * mSize + k));  // Diagonal element for Rhop(z)
+            motif(k, 0) = std::real(Rhop(0)(diag, k, k));  // Diagonal element for Rhop(x)
+            motif(k, 1) = std::real(Rhop(1)(diag, k, k));  // Diagonal element for Rhop(y)
+            motif(k, 2) = std::real(Rhop(2)(diag, k, k));  // Diagonal element for Rhop(z)
+            motif(k, 3) = k+1; // species?
         }
 
         m_file.close();
@@ -221,42 +259,48 @@ void Wannier90Configuration::extractDimension(){
     void Wannier90Configuration::mapContent(bool debug, int electronNum) {
         
         // Fill in the system info structure with relevant data
-    /**
-    *    Necessary data:
-    *    systemInfo.ndim           = ndim;
-    *    systemInfo.bravaisLattice = bravaisLattice;
-    *    systemInfo.motif          = motif;
-    *    systemInfo.filling        = totalElectrons/2;
-    *    systemInfo.bravaisVectors = bravaisVectors;
-    *    systemInfo.overlap        = overlapMatrices;
-    *    systemInfo.hamiltonian    = fockMatrices;
-    **/
 
-        systemInfo.ndim = ndim;                  // system/matrix size
-        systemInfo.bravaisVectors = Rn;          // Store bravais vectors
-        systemInfo.motif = motif;                // Store motif localization data
-        systemInfo.hamiltonian = H;              // Store Hamiltonian
-        // systemInfo.overlap = Rhop;               // ? check this
-        systemInfo.filling = electronNum;        /* missing --> totalElectrons on w90 file */
+        systemInfo.ndim = ndim;                        // system/matrix size
+        systemInfo.ncell = nFock;                      // system/matrix size
+        systemInfo.bravaisLattice = Rn;                // Store bravais lattice
+        systemInfo.bravaisVectors = bravaisVectors;    // Store bravais nieghbors vectors
+        systemInfo.motif = motif;                      // Store motif localization data
+        systemInfo.hamiltonian = H;                    // Store Hamiltonian
+        systemInfo.filling = electronNum;              /* missing --> totalElectrons on w90 file */
+        // systemInfo.extendedMotif = Rhop;               // plans ?
 
         // Debug output
         if (true) {
+            std::cout << "========================" << std::endl;
+            std::cout << "||     PARSED VALUES  ||" << std::endl;
+            std::cout << "========================" << std::endl;
             // std::cout << "Number of Fock matrices (nFock): " << systemInfo.nFock << "\n";
-            std::cout << "Matrix size (mSize): " << mSize << "\n";
-            std::cout << "nFock: " << nFock << "\n";
-            // std::cout << "bravaisVectors: " << "\n";
-            // std::cout << systemInfo.bravaisVectors << "\n";
-            std::cout << "System Dimension: " << systemInfo.ndim << "\n";
-            std::cout << "Filling: " << systemInfo.filling << "\n";
-            std::cout << "===================" << "\n";
-            std::cout << "Motif: " << "\n";
-            std::cout << systemInfo.motif << "\n";
-            std::cout << "===================" << "\n";
+            std::cout << "Matrix size (mSize): " << mSize               << std::endl;
+
+            std::cout << "ncell: "               << systemInfo.ncell    << std::endl;
+
+            std::cout << "bravaisLattice: "                             << std::endl;
+            std::cout << systemInfo.bravaisLattice                      << std::endl;
+
+            std::cout << "bravaisVectors: "                             << std::endl;
+            std::cout << systemInfo.bravaisVectors                      << std::endl;
+
+            std::cout << "System Dimension: "   << systemInfo.ndim      << std::endl;
+
+            std::cout << "Filling: "            << systemInfo.filling   << std::endl;
+
+            std::cout << "-------------------"                          << std::endl;
+            std::cout << "Motif: "                                      << std::endl;
+            std::cout << systemInfo.motif                               << std::endl;
+            std::cout << "-------------------"                          << std::endl;
+
             // std::cout << "Rhop: " << std::endl;
             // // std::cout << Rhop << "\n";
             // std::cout << "===================" << "\n";
-            // std::cout << "Hamiltonian matrix: " << "\n";
-            // std::cout << systemInfo.hamiltonian << "\n";
+
+            std::cout << "Hamiltonian matrix: "                         << std::endl;
+            std::cout << systemInfo.hamiltonian                         << std::endl;
+            std::cout << "========================" << std::endl;
         }
     }
 }

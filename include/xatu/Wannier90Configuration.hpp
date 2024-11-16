@@ -11,13 +11,14 @@ class Wannier90Configuration : public SystemConfiguration {
         int mSize, nFock, ndim, electronNum;
         arma::mat Rn;                           // Real-space lattice vectors (3x3)
         arma::mat iRn;                       // index of neighbors
+        arma::mat bravaisVectors;
         arma::cx_cube H;                        // Hamiltonian cube (nFock, ndim, ndim)
-        arma::cx_cube Rhop;                     // Orbital localization cube (3, nFock, ndim, ndim)
+        arma::field<arma::cx_cube> Rhop;         // Orbital localization cube (3, nFock, ndim, ndim)
         arma::rowvec Degen;                     // Degeneracies for the states
         arma::mat motif, bravaisLattice;        // Diagonal elements for motif localization
 
     public:
-        Wannier90Configuration(std::string, int electronNum = 26);
+        Wannier90Configuration(std::string, int electronNum = 2);
         ~Wannier90Configuration(){};
 
         void parseContent();
@@ -34,7 +35,7 @@ class Wannier90Configuration : public SystemConfiguration {
        void extractDimension();
 
     protected:
-        void mapContent(bool debug = false, int electronNum = 26);
+        void mapContent(bool debug = false, int electronNum = 2);
 
 
 };

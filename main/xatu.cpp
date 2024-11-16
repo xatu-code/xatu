@@ -80,6 +80,7 @@ int main(int argc, char* argv[]){
         systemConfig.reset(new xatu::CRYSTALConfiguration(systemfile, ncells));
     } else if (w90Arg.isSet()){
         systemConfig.reset(new xatu::Wannier90Configuration(systemfile, electronNum));
+        cout << "Parsed Wannier90 _tb.out" << std::endl;
     }
     else{
         if (format == "hdf5"){
@@ -120,6 +121,7 @@ int main(int argc, char* argv[]){
     cout << "+---------------------------------------------------------------------------+" << endl;
     
     xatu::ExcitonTB bulkExciton = xatu::ExcitonTB(*systemConfig, *excitonConfig);
+    cout << "---------ExcitonTB done---------" << std::endl;
     bulkExciton.setMode(excitonConfig->excitonInfo.mode);
     bulkExciton.system->setAU(dftArg.isSet());
 

@@ -79,6 +79,7 @@ int main(int argc, char* argv[]){
     if (dftArg.isSet()){
         systemConfig.reset(new xatu::CRYSTALConfiguration(systemfile, ncells));
     } else if (w90Arg.isSet()){
+        cout << "Parsing w90 file..." << std::endl;
         systemConfig.reset(new xatu::Wannier90Configuration(systemfile, electronNum));
         cout << "Parsed Wannier90 _tb.out" << std::endl;
     }

@@ -122,7 +122,6 @@ int main(int argc, char* argv[]){
     cout << "+---------------------------------------------------------------------------+" << endl;
     
     xatu::ExcitonTB bulkExciton = xatu::ExcitonTB(*systemConfig, *excitonConfig);
-    cout << "---------ExcitonTB done---------" << std::endl;
     bulkExciton.setMode(excitonConfig->excitonInfo.mode);
     bulkExciton.system->setAU(dftArg.isSet());
 

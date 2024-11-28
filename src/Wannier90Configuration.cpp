@@ -48,12 +48,16 @@ namespace xatu {
             // std::cout << "Line " << i+1 << ": " << line << std::endl;
         }
 
+        // change to check a threshold between highest
+        // 2D: motif(z) and Rn(2,2)
+        // 1D: motif(x or y) and Rn(1,1) or Rn(0,0)
         if (Rn(2,0) == 0 && Rn(2,1) == 0) {
             ndim = 2;
             if (Rn(1,0) == 0 && Rn(1,1) == 0) {
                 ndim = 1;
             }
         }
+
         lattice = arma::mat(ndim, 3, arma::fill::zeros);
         for (int i = 0; i < ndim; i++) {
             lattice(i, 0) = Rn(i,0);
@@ -63,20 +67,16 @@ namespace xatu {
 
 
 
-        std::getline(m_file, line);  // Move to the next line
-
         // Parse ndim and nFock values 
+        std::getline(m_file, line);  // Move to the next line
         std::istringstream iss(line);
         iss >> mSize; // this is not ndim!!
-        // std::cout << "mSize: " << mSize << std::endl;
         iss.clear();  // Clear any flags (like EOF)
 
 
         std::getline(m_file, line);  // Move to the next line
         iss.str(line);  // Assign new content to the stream
-
         iss >> nFock;
-        // std::cout << "nFock: " << nFock << std::endl;
         iss.clear();  // Clear any flags (like EOF)
 
         std::getline(m_file, line);  // Move to the next line
@@ -104,7 +104,7 @@ namespace xatu {
         }
         std::getline(m_file, line);  // Move to the next line
         iss.clear(); 
-        iRn = arma::mat(nFock, 3, arma::fill::zeros);                           // indexes of the neighbors
+        iRn = arma::imat(nFock, 3, arma::fill::zeros);                           // indexes of the neighbors
         fockMatrices = arma::cx_dcube(mSize, mSize, nFock, arma::fill::zeros);   // Hamiltonian
 
 
@@ -132,11 +132,6 @@ namespace xatu {
             // fockMatrices.slice(i) *= Degen(i);  // 
             std::getline(m_file, line); // Skip blank line if not the last
         }
-
-        // account for degeneracies. This breaks things for some reason...
-        // for (int i = 0; i < nFock; i++) {
-        //     fockMatrices.slice(i) *= Degen(i);
-        // }
 
         bravaisVectors = arma::dmat(nFock, 3, arma::fill::zeros);
 
@@ -226,7 +221,7 @@ namespace xatu {
         systemInfo.bravaisVectors = bravaisVectors;    // Store bravais nieghbors vectors
         systemInfo.motif = motif;                      // Store motif localization data
         systemInfo.hamiltonian = fockMatrices;         // Store Hamiltonian
-        systemInfo.filling = filling;                  /* missing --> totalElectrons on w90 file */
+        systemInfo.filling = filling;                  /* missing on w90 file */
         // systemInfo.extendedMotif = Rhop;               // plans ?
 
         // int norbitals_size = motif.n_rows;

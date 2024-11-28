@@ -81,7 +81,7 @@ namespace xatu {
 
         std::getline(m_file, line);  // Move to the next line
 
-        Degen = arma::rowvec(nFock, arma::fill::zeros); // armadillo is faster with columns
+        Degen = arma::irowvec(nFock, arma::fill::zeros); // armadillo is faster with columns
 
         // ---------------- DEGENERACIES ----------------//
         int degenPerLine = 15;
@@ -91,19 +91,24 @@ namespace xatu {
         // Read full chunks of 15 elements
         for (int i = 0; i < numLines; i++) {
             iss.str(line);
+
             for (int j = 0; j < degenPerLine; j++) {
-                iss >> Degen[i * degenPerLine + j];
+                iss >> Degen(i * degenPerLine + j);
             }
             std::getline(m_file, line);  // Move to the next line
+            iss.clear();
         }
 
         iss.str(line);
         // Read the remaining elements for the last chunk
         for (int j = 0; j < remainder; ++j) {
-            iss >> Degen[numLines * degenPerLine + j];
+            iss >> Degen(numLines * degenPerLine + j);
         }
         std::getline(m_file, line);  // Move to the next line
         iss.clear(); 
+
+
+
         iRn = arma::imat(nFock, 3, arma::fill::zeros);                           // indexes of the neighbors
         fockMatrices = arma::cx_dcube(mSize, mSize, nFock, arma::fill::zeros);   // Hamiltonian
 
@@ -129,7 +134,7 @@ namespace xatu {
                     iss.clear(); 
                 }
             }
-            // fockMatrices.slice(i) *= Degen(i);  // 
+            fockMatrices.slice(i) *= Degen(i);  // 
             std::getline(m_file, line); // Skip blank line if not the last
         }
 
@@ -242,32 +247,36 @@ namespace xatu {
 
             std::cout << "No. of Fock matrices: "               << nFock    << std::endl;
 
-            std::cout << "-------------------"                          << std::endl;
-            std::cout << "bravaisLattice: "                             << std::endl;
-            std::cout << std::setprecision(15) << systemInfo.bravaisLattice(0,0)                      << std::endl;
+            // std::cout << "-------------------"                          << std::endl;
+            // std::cout << "bravaisLattice: "                             << std::endl;
+            // std::cout << systemInfo.bravaisLattice                      << std::endl;
+            // std::cout << "-------------------"                          << std::endl;
+
+            std::cout << "Degen: "                             << std::endl;
+            std::cout <<  Degen                                 << std::endl;
             std::cout << "-------------------"                          << std::endl;
 
-            std::cout << "-------------------"                          << std::endl;
-            std::cout << "bravaisVectors: "                             << std::endl;
-            std::cout << std::setprecision(15) << systemInfo.bravaisVectors                      << std::endl;
-            std::cout << "-------------------"                          << std::endl;
+            // std::cout << "-------------------"                          << std::endl;
+            // std::cout << "bravaisVectors: "                             << std::endl;
+            // std::cout << systemInfo.bravaisVectors                      << std::endl;
+            // std::cout << "-------------------"                          << std::endl;
 
             std::cout << "System Dimension: "   << systemInfo.ndim      << std::endl;
 
             std::cout << "Filling: "            << systemInfo.filling   << std::endl;
 
-            std::cout << "-------------------"                          << std::endl;
-            std::cout << "Motif: "                                      << std::endl;
-            std::cout << std::setprecision(15) << systemInfo.motif                           << std::endl;
-            std::cout << "-------------------"                          << std::endl;
+            // std::cout << "-------------------"                          << std::endl;
+            // std::cout << "Motif: "                                      << std::endl;
+            // std::cout << systemInfo.motif                           << std::endl;
+            // std::cout << "-------------------"                          << std::endl;
 
             // std::cout << "Rhop: "                                       << std::endl;
             // std::cout << Rhop                                           << std::endl;;
             // std::cout << "==================="                          << std::endl;;
 
-            std::cout << "iRn index: "                         << std::endl;
-            std::cout <<  iRn                         << std::endl;
-            std::cout << "========================" << std::endl;
+            // std::cout << "iRn index: "                         << std::endl;
+            // std::cout <<  iRn                         << std::endl;
+            // std::cout << "========================" << std::endl;
 
             // std::cout << "Hamiltonian matrix: "                         << std::endl;
             // std::cout << systemInfo.hamiltonian                         << std::endl;

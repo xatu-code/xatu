@@ -14,7 +14,7 @@ class Wannier90Configuration : public SystemConfiguration {
         arma::cx_dcube fockMatrices;               // Hamiltonian cube (nFock, ndim, ndim)
         arma::field<arma::cx_cube> Rhop;         // Orbital localization cube (3, nFock, ndim, ndim)
         arma::mat motif, bravaisLattice;        // Diagonal elements for motif localization
-        arma::rowvec Degen;                     // Degeneracies for the states
+        arma::irowvec Degen;                     // Degeneracies for the states
 
     public:
         Wannier90Configuration(std::string, int electronNum = 1);

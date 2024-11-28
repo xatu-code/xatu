@@ -32,7 +32,7 @@ namespace xatu {
         // if (!fileStream.is_open()) {
         //     throw std::runtime_error("Failed to open file: " + file);
         // }
-
+        std::cout << std::fixed << std::showpoint;
         Rn = arma::mat(3, 3, arma::fill::zeros); // Initialize as a 3x3 zero matrix
         for (int i = 0; i < 3; i++) {
             if (!std::getline(m_file, line)) {
@@ -44,7 +44,7 @@ namespace xatu {
             Rn(i, 0) = val1;
             Rn(i, 1) = val2;
             Rn(i, 2) = val3;
-
+            iss.clear();
             // std::cout << "Line " << i+1 << ": " << line << std::endl;
         }
 
@@ -222,7 +222,6 @@ namespace xatu {
         // Fill in the system info structure with relevant data
 
         systemInfo.ndim = ndim;                        // system dimension
-        systemInfo.ncell = nFock;                      // system/matrix size
         systemInfo.bravaisLattice = lattice;           // Store bravais lattice
         systemInfo.bravaisVectors = bravaisVectors;    // Store bravais nieghbors vectors
         systemInfo.motif = motif;                      // Store motif localization data
@@ -239,23 +238,23 @@ namespace xatu {
         systemInfo.norbitals      = norbitals;
 
         // Debug output
-        if (false) {
+        if (true) {
             std::cout << "========================" << std::endl;
             std::cout << "||     PARSED VALUES  ||" << std::endl;
             std::cout << "========================" << std::endl;
             // std::cout << "Number of Fock matrices (nFock): " << systemInfo.nFock << "\n";
             std::cout << "Matrix size (mSize): " << mSize               << std::endl;
 
-            std::cout << "ncell: "               << systemInfo.ncell    << std::endl;
+            std::cout << "No. of Fock matrices: "               << nFock    << std::endl;
 
             std::cout << "-------------------"                          << std::endl;
             std::cout << "bravaisLattice: "                             << std::endl;
-            std::cout << systemInfo.bravaisLattice                      << std::endl;
+            std::cout << std::setprecision(15) << systemInfo.bravaisLattice(0,0)                      << std::endl;
             std::cout << "-------------------"                          << std::endl;
 
             std::cout << "-------------------"                          << std::endl;
             std::cout << "bravaisVectors: "                             << std::endl;
-            std::cout << systemInfo.bravaisVectors                      << std::endl;
+            std::cout << std::setprecision(15) << systemInfo.bravaisVectors                      << std::endl;
             std::cout << "-------------------"                          << std::endl;
 
             std::cout << "System Dimension: "   << systemInfo.ndim      << std::endl;
@@ -264,20 +263,20 @@ namespace xatu {
 
             std::cout << "-------------------"                          << std::endl;
             std::cout << "Motif: "                                      << std::endl;
-            std::cout << systemInfo.motif                               << std::endl;
+            std::cout << std::setprecision(15) << systemInfo.motif                           << std::endl;
             std::cout << "-------------------"                          << std::endl;
 
-            std::cout << "Rhop: "                                       << std::endl;
-            std::cout << Rhop                                           << std::endl;;
-            std::cout << "==================="                          << std::endl;;
+            // std::cout << "Rhop: "                                       << std::endl;
+            // std::cout << Rhop                                           << std::endl;;
+            // std::cout << "==================="                          << std::endl;;
 
             std::cout << "iRn index: "                         << std::endl;
-            std::cout << iRn                         << std::endl;
+            std::cout <<  iRn                         << std::endl;
             std::cout << "========================" << std::endl;
 
-            std::cout << "Hamiltonian matrix: "                         << std::endl;
-            std::cout << systemInfo.hamiltonian                         << std::endl;
-            std::cout << "========================" << std::endl;
+            // std::cout << "Hamiltonian matrix: "                         << std::endl;
+            // std::cout << systemInfo.hamiltonian                         << std::endl;
+            // std::cout << "========================" << std::endl;
             std::cout << std::setprecision(15) << systemInfo.hamiltonian.slice(0)                         << std::endl;
         }
     }

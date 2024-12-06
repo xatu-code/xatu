@@ -130,7 +130,7 @@ namespace xatu {
                     int ii, jj;
                     double R, Im;
                     iss >> ii >> jj >> R >> Im;
-                    fockMatrices(jj-1, ii-1, i) = std::complex<double>(R, Im);
+                    fockMatrices(ii-1, jj-1, i) = std::complex<double>(R, Im);
                     iss.clear(); 
                 }
             }
@@ -174,9 +174,9 @@ namespace xatu {
                     double a1, a1j, a2, a2j, a3, a3j;
                     iss >> ii >> jj >> a1 >> a1j >> a2 >> a2j >> a3 >> a3j;
 
-                    Rhop(i)(jj-1, ii-1, 0) = std::complex<double>(a1, a1j);
-                    Rhop(i)(jj-1, ii-1, 1) = std::complex<double>(a2, a2j);
-                    Rhop(i)(jj-1, ii-1, 2) = std::complex<double>(a3, a3j);
+                    Rhop(i)(ii-1, jj-1, 0) = std::complex<double>(a1, a1j);
+                    Rhop(i)(ii-1, jj-1, 1) = std::complex<double>(a2, a2j);
+                    Rhop(i)(ii-1, jj-1, 2) = std::complex<double>(a3, a3j);
                     iss.clear(); 
                 }
             }

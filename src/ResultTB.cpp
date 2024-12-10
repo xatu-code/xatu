@@ -425,17 +425,50 @@ void ResultTB::writeAbsorptionSpectrum(){
         R.row(i) = system->bravaisLattice.row(i);
     }
 
-    // arma::mat B = system->motif.cols(0, 2);
+
+    arma::field<arma::cx_cube> nonConstRhop = system->Rhop;
+    arma::Cube<double> extendedMotifFull(3, nR, norb * norb, arma::fill::zeros); // Create a flattened version
+
     arma::mat extendedMotif = arma::zeros(system->basisdim, 3);
-    int it = 0;
-    for(int i = 0; i < system->natoms; i++){
-        arma::rowvec atom = system->motif.row(i).subvec(0, 2);
-        int species = system->motif.row(i)(3);
-        for(int j = 0; j < system->orbitals(species); j++){
-            extendedMotif.row(it) = atom; 
-            it++;
+
+    if(!system->Rhop.empty()) {
+        std::cout << "Rhop is NOT empty! Filling extendedMotif with it..." << std::endl;
+        // Iterate over Rhop to populate extendedMotif
+        for (int iFock = 0; iFock < nR; iFock++) {
+            arma::cx_cube currentCube = system->Rhop(iFock); // Extract current cx_cube from Rhop
+
+            // Iterate over slices (3 slices: 0, 1, 2)
+            for (int slice = 0; slice < 3; slice++) {
+                arma::mat realPart = arma::real(currentCube.slice(slice)); // Extract real part of the slice
+
+                for (int row = 0; row < norb; row++) {
+                    for (int col = 0; col < norb; col++) {
+                        int flattenedIndex = col + row * norb;
+                        extendedMotifFull(slice, iFock, flattenedIndex) = realPart(row, col);
+                    }
+                }
+            }
+        }
+    } else {
+        //--------------------original ExtendedMotif----------------//
+        int it = 0;
+        for(int i = 0; i < system->natoms; i++){
+            arma::rowvec atom = system->motif.row(i).subvec(0, 2);
+            int species = system->motif.row(i)(3);
+            for(int j = 0; j < system->orbitals(species); j++){
+                extendedMotif.row(it) = atom; 
+                it++;
+            }
         }
     }
+
+    // Flatten into column-major order for Fortran
+    arma::vec flattenedMotif = arma::vectorise(extendedMotifFull);
+    std::cout << "Size of flattenedMotif: " << flattenedMotif.n_elem << std::endl;
+
+    int flattenedSize = 3*nR*norb*norb;
+    std::cout << "3*nR*norb*norb =  " << flattenedSize << std::endl;
+
     arma::cx_cube hhop = system->hamiltonianMatrices;
     arma::cube shop(arma::size(hhop));
     if (system->overlapMatrices.empty()){
@@ -454,9 +487,15 @@ void ResultTB::writeAbsorptionSpectrum(){
     arma::mat eigval_sp = exciton->eigvalKStack;
     arma::cx_cube eigvec_sp = exciton->eigvecKStack;
 
-    skubo_w_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
-             Rvec.memptr(), R.memptr(), extendedMotif.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
-             rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr());
+    if(!system->Rhop.empty()) {
+        skubo_w_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
+                 Rvec.memptr(), R.memptr(), flattenedMotif.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
+                 rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr());
+    } else {
+        skubo_w_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
+                 Rvec.memptr(), R.memptr(), extendedMotif.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
+                 rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr());
+    }
 }
 
 /**

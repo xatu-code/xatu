@@ -221,13 +221,13 @@ namespace xatu {
         
         // Fill in the system info structure with relevant data
 
-        systemInfo.ndim = ndim;                        // system dimension
-        systemInfo.bravaisLattice = lattice;           // Store bravais lattice
-        systemInfo.bravaisVectors = bravaisVectors;    // Store bravais nieghbors vectors
-        systemInfo.motif = motif;                      // Store motif localization data
-        systemInfo.hamiltonian = fockMatrices;         // Store Hamiltonian
-        systemInfo.filling = filling;                  /* missing on w90 file */
-        // systemInfo.extendedMotif = Rhop;               // plans ?
+        systemInfo.ndim             = ndim;                        // system dimension
+        systemInfo.bravaisLattice   = lattice;           // Store bravais lattice
+        systemInfo.bravaisVectors   = bravaisVectors;    // Store bravais nieghbors vectors
+        systemInfo.motif            = motif;                      // Store motif localization data
+        systemInfo.hamiltonian      = fockMatrices;         // Store Hamiltonian
+        systemInfo.filling          = filling;                  /* missing on w90 file */
+        systemInfo.Rhop             = Rhop;               // plans ?
 
         // int norbitals_size = motif.n_rows;
         arma::urowvec norbitals = arma::zeros<arma::urowvec>(mSize);
@@ -265,22 +265,22 @@ namespace xatu {
 
             std::cout << "Filling: "            << systemInfo.filling   << std::endl;
 
-            // std::cout << "-------------------"                          << std::endl;
-            // std::cout << "Motif: "                                      << std::endl;
-            // std::cout << systemInfo.motif                           << std::endl;
-            // std::cout << "-------------------"                          << std::endl;
+            std::cout << "-------------------"                          << std::endl;
+            std::cout << "Motif: "                                      << std::endl;
+            std::cout << systemInfo.motif                           << std::endl;
+            std::cout << "-------------------"                          << std::endl;
 
-            // std::cout << "Rhop: "                                       << std::endl;
-            // std::cout << Rhop                                           << std::endl;;
-            // std::cout << "==================="                          << std::endl;;
+            std::cout << "iRn index: "                         << std::endl;
+            std::cout <<  iRn                         << std::endl;
+            std::cout << "========================" << std::endl;
 
-            // std::cout << "iRn index: "                         << std::endl;
-            // std::cout <<  iRn                         << std::endl;
-            // std::cout << "========================" << std::endl;
+            std::cout << "Hamiltonian matrix: "                         << std::endl;
+            std::cout << systemInfo.hamiltonian                         << std::endl;
+            std::cout << "========================" << std::endl;
 
-            // std::cout << "Hamiltonian matrix: "                         << std::endl;
-            // std::cout << systemInfo.hamiltonian                         << std::endl;
-            // std::cout << "========================" << std::endl;
+            std::cout << "Rhop: "                                       << std::endl;
+            std::cout << Rhop                                           << std::endl;;
+            std::cout << "==================="                          << std::endl;;
             std::cout << std::setprecision(15) << systemInfo.hamiltonian.slice(0)                         << std::endl;
         }
     }

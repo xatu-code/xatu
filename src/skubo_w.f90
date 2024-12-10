@@ -13,7 +13,8 @@ dimension rky(npointstotal)
 dimension rkz(npointstotal)
 dimension fk_ex(norb_ex,norb_ex)
 dimension e_ex(norb_ex)
-dimension B(norb,3)
+! dimension B(norb,3)
+dimension B(3*nR*norb*norb)
 dimension rhop(3,nR,norb,norb)
 dimension eigval_stack(nv_ex + nc_ex,npointstotal)
 dimension eigvec_stack(norb,nv_ex + nc_ex,npointstotal)
@@ -186,7 +187,7 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
   dimension rkz(npointstotal)
   dimension fk_ex(norb_ex,norb_ex)
   dimension e_ex(norb_ex)
-  dimension B(norb,3)
+  dimension B(3*nR*norb*norb)
   dimension rhop(3,nR,norb,norb)
   dimension eigval_stack(nv_ex + nc_ex,npointstotal)
   dimension eigvec_stack(norb,nv_ex + nc_ex,npointstotal)
@@ -275,10 +276,15 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
   call hoppings_observables_TB(norb,nR,Rvec,shop,hhop,rhop,sderhop,hderhop)
   !11/05/2023 JJEP: fill rhop here. Easier to extend to DFT later 
   rhop=0.0d0
-  do nn=1,norb
-    do nj=1,3
-      rhop(nj,1,nn,nn)=B(nn,nj)
-    end do
+  ! Reshape the 1D array into a 4D array manually
+  do i = 1, 3
+      do j = 1, nR
+          do k = 1, norb
+              do l = 1, norb
+                  rhop(i, j, k, l) = B((i-1)*nR*norb*norb + (j-1)*norb*norb + (k-1)*norb + l)
+              end do
+          end do
+      end do
   end do
   
   !Brillouin zone sampling	  

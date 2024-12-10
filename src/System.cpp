@@ -22,6 +22,7 @@ System::System(const System& system) : Lattice(system){
 	filling_			 = system.filling;
 	fermiLevel_			 = filling_ - 1;
 	basisdim_ 			 = system.basisdim;
+	Rhop_ 				 = system.Rhop;
 }
 
 /**
@@ -50,6 +51,7 @@ void System::initializeSystemAttributes(const SystemConfiguration& configuration
 	overlapMatrices_     = configuration.systemInfo.overlap;
 	filling_			 = configuration.systemInfo.filling;
 	fermiLevel_			 = filling_ - 1;
+	Rhop_				 = configuration.systemInfo.Rhop;
 
     int basisdim = 0;
     for(int i = 0; i < natoms; i++){

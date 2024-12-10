@@ -29,6 +29,8 @@ class SystemConfiguration : public virtual ConfigurationBase {
         arma::mat bravaisVectors;
         /// Vector storing the number of orbitals for each chemical species.
         arma::urowvec norbitals;
+
+        arma::field<arma::cx_cube> Rhop;
     };
         
     public:

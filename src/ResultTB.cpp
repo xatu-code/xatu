@@ -425,26 +425,33 @@ void ResultTB::writeAbsorptionSpectrum(){
         R.row(i) = system->bravaisLattice.row(i);
     }
 
-
-    arma::field<arma::cx_cube> nonConstRhop = system->Rhop;
-    arma::Cube<double> extendedMotifFull(3, nR, norb * norb, arma::fill::zeros); // Create a flattened version
-
+    // standard extendendMotif for other inputs
     arma::mat extendedMotif = arma::zeros(system->basisdim, 3);
 
-    if(!system->Rhop.empty()) {
+    arma::field<arma::cx_cube> nonConstRhop = system->Rhop;
+    std::cout << "-> nonConstRhop: "                            << std::endl;
+    std::cout <<  nonConstRhop                                  << std::endl;
+    std::cout << "==================="                          << std::endl;
+
+    // Full extendedMotif for off-diagonal elements
+    arma::Cube<double> extendedMotifFull(nR, norb * norb, 3, arma::fill::zeros); // Create a flattened version
+
+    if (!system->Rhop.empty()) {
         std::cout << "Rhop is NOT empty! Filling extendedMotif with it..." << std::endl;
+
         // Iterate over Rhop to populate extendedMotif
         for (int iFock = 0; iFock < nR; iFock++) {
             arma::cx_cube currentCube = system->Rhop(iFock); // Extract current cx_cube from Rhop
 
-            // Iterate over slices (3 slices: 0, 1, 2)
+            // Iterate over the 3 slices (components)
             for (int slice = 0; slice < 3; slice++) {
                 arma::mat realPart = arma::real(currentCube.slice(slice)); // Extract real part of the slice
 
+                // Flatten the norb x norb matrix into norb * norb
                 for (int row = 0; row < norb; row++) {
                     for (int col = 0; col < norb; col++) {
-                        int flattenedIndex = col + row * norb;
-                        extendedMotifFull(slice, iFock, flattenedIndex) = realPart(row, col);
+                        int flattenedIndex = row * norb + col; // Flatten (row, col) into a 1D index
+                        extendedMotifFull(iFock, flattenedIndex, slice) = realPart(row, col);
                     }
                 }
             }
@@ -463,11 +470,14 @@ void ResultTB::writeAbsorptionSpectrum(){
     }
 
     // Flatten into column-major order for Fortran
-    arma::vec flattenedMotif = arma::vectorise(extendedMotifFull);
-    std::cout << "Size of flattenedMotif: " << flattenedMotif.n_elem << std::endl;
+    // arma::vec flattenedMotif = arma::vectorise(extendedMotifFull);
+    // std::cout << "Size of flattenedMotif: " << flattenedMotif.n_elem << std::endl;
 
-    int flattenedSize = 3*nR*norb*norb;
-    std::cout << "3*nR*norb*norb =  " << flattenedSize << std::endl;
+    // int flattenedSize = 3*nR*norb*norb;
+    // std::cout << "3*nR*norb*norb =  " << flattenedSize << std::endl;
+
+    std::cout << "extendedMotifFull: "  << std::endl;
+    std::cout <<  extendedMotifFull << std::endl;
 
     arma::cx_cube hhop = system->hamiltonianMatrices;
     arma::cube shop(arma::size(hhop));
@@ -489,7 +499,7 @@ void ResultTB::writeAbsorptionSpectrum(){
 
     if(!system->Rhop.empty()) {
         skubo_w_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
-                 Rvec.memptr(), R.memptr(), flattenedMotif.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
+                 Rvec.memptr(), R.memptr(), extendedMotifFull.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
                  rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr());
     } else {
         skubo_w_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 

@@ -14,7 +14,7 @@ dimension rkz(npointstotal)
 dimension fk_ex(norb_ex,norb_ex)
 dimension e_ex(norb_ex)
 ! dimension B(norb,3)
-dimension B(3*nR*norb*norb)
+dimension B(nR, norb*norb, 3)
 dimension rhop(3,nR,norb,norb)
 dimension eigval_stack(nv_ex + nc_ex,npointstotal)
 dimension eigvec_stack(norb,nv_ex + nc_ex,npointstotal)
@@ -187,7 +187,7 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
   dimension rkz(npointstotal)
   dimension fk_ex(norb_ex,norb_ex)
   dimension e_ex(norb_ex)
-  dimension B(3*nR*norb*norb)
+  dimension B(nR, norb*norb, 3)
   dimension rhop(3,nR,norb,norb)
   dimension eigval_stack(nv_ex + nc_ex,npointstotal)
   dimension eigvec_stack(norb,nv_ex + nc_ex,npointstotal)
@@ -232,7 +232,7 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
 
   if (convert_to_au) then
     Rvec=Rvec/0.52917721067121d0
-    B=B/0.52917721067121d0 
+    ! B=B/0.52917721067121d0 
     R=R/0.52917721067121d0 
     hhop=hhop/27.211385d0
     rkx=rkx*0.52917721067121d0
@@ -275,18 +275,22 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
   !getting some SP variables
   call hoppings_observables_TB(norb,nR,Rvec,shop,hhop,rhop,sderhop,hderhop)
   !11/05/2023 JJEP: fill rhop here. Easier to extend to DFT later 
+
   rhop=0.0d0
-  ! Reshape the 1D array into a 4D array manually
-  do i = 1, 3
-      do j = 1, nR
-          do k = 1, norb
-              do l = 1, norb
-                  rhop(i, j, k, l) = B((i-1)*nR*norb*norb + (j-1)*norb*norb + (k-1)*norb + l)
-              end do
+  do i = 1, nR
+      do j = 1, norb
+        do k = 1, norb
+          do l = 1, 3
+            idx = (J-1) * norb + j       ! Flattened index
+            rhop(l, i, j, k) = B(i, idx, l)
+            write(*, "(f8.2)", advance='no') rhop(l, i, j, k)
           end do
+        end do
+        print *        ! Lineskip after each norb x norb matrix
       end do
-  end do
-  
+        print *, '&'   ! Separator for each nR matrix
+    end do
+
   !Brillouin zone sampling	  
   !!$OMP PARALLEL DO PRIVATE(rkxp,rkyp,rkzp), &
   !!$OMP PRIVATE(hkernel,skernel,sderkernel,hderkernel,akernel), &  

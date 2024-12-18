@@ -134,7 +134,7 @@ namespace xatu {
                     iss.clear(); 
                 }
             }
-            fockMatrices.slice(i) *= Degen(i);  // 
+            // fockMatrices.slice(i) /= Degen(i);  // correcting double-counted neighbors
             std::getline(m_file, line); // Skip blank line if not the last
         }
 
@@ -279,8 +279,8 @@ namespace xatu {
             std::cout << "========================" << std::endl;
 
             std::cout << "Rhop: "                                       << std::endl;
-            std::cout << Rhop                                           << std::endl;;
-            std::cout << "==================="                          << std::endl;;
+            std::cout <<  Rhop                                           << std::endl;
+            std::cout << "==================="                          << std::endl;
             std::cout << std::setprecision(15) << systemInfo.hamiltonian.slice(0)                         << std::endl;
         }
     }

@@ -281,7 +281,7 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
       do j = 1, norb
         do k = 1, norb
           do l = 1, 3
-            idx = (J-1) * norb + j       ! Flattened index
+            idx = (j-1) * norb + k       ! Flattened index
             rhop(l, i, j, k) = B(i, idx, l)
             write(*, "(f8.2)", advance='no') rhop(l, i, j, k)
           end do

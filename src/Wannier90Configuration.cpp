@@ -134,7 +134,7 @@ namespace xatu {
                     iss.clear(); 
                 }
             }
-            fockMatrices.slice(i) *= Degen(i);  // 
+            // fockMatrices.slice(i) /= Degen(i);  // 
             std::getline(m_file, line); // Skip blank line if not the last
         }
 

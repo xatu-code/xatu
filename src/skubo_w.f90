@@ -283,12 +283,9 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
           do l = 1, 3
             idx = (j-1) * norb + k       ! Flattened index
             rhop(l, i, j, k) = B(i, idx, l)
-            write(*, "(f8.2)", advance='no') rhop(l, i, j, k)
           end do
         end do
-        print *        ! Lineskip after each norb x norb matrix
       end do
-        print *, '&'   ! Separator for each nR matrix
     end do
 
   !Brillouin zone sampling	  

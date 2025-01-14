@@ -238,7 +238,7 @@ namespace xatu {
         systemInfo.norbitals      = norbitals;
 
         // Debug output
-        if (true) {
+        if (false) {
             std::cout << "========================" << std::endl;
             std::cout << "||     PARSED VALUES  ||" << std::endl;
             std::cout << "========================" << std::endl;

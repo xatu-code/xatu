@@ -51,9 +51,9 @@ namespace xatu {
         // change to check a threshold between highest
         // 2D: motif(z) and Rn(2,2)
         // 1D: motif(x or y) and Rn(1,1) or Rn(0,0)
-        if (Rn(2,0) == 0 && Rn(2,1) == 0) {
+        if (Rn(2,2) >= 100) {
             ndim = 2;
-            if (Rn(1,0) == 0 && Rn(1,1) == 0) {
+            if (Rn(1,1) >= 100 || Rn(0,0) >= 100) {
                 ndim = 1;
             }
         }
@@ -238,7 +238,7 @@ namespace xatu {
         systemInfo.norbitals      = norbitals;
 
         // Debug output
-        if (true) {
+        if (false) {
             std::cout << "========================" << std::endl;
             std::cout << "||     PARSED VALUES  ||" << std::endl;
             std::cout << "========================" << std::endl;

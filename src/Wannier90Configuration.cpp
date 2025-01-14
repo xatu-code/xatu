@@ -58,6 +58,8 @@ namespace xatu {
             }
         }
 
+        ndim = 2
+        
         lattice = arma::mat(ndim, 3, arma::fill::zeros);
         for (int i = 0; i < ndim; i++) {
             lattice(i, 0) = Rn(i,0);

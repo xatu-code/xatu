@@ -51,9 +51,9 @@ namespace xatu {
         // change to check a threshold between highest
         // 2D: motif(z) and Rn(2,2)
         // 1D: motif(x or y) and Rn(1,1) or Rn(0,0)
-        if (Rn(2,0) == 0 && Rn(2,1) == 0) {
+        if (Rn(2,2) >= 100) {
             ndim = 2;
-            if (Rn(1,0) == 0 && Rn(1,1) == 0) {
+            if (Rn(1,1) >= 100 || Rn(0,0) >= 100) {
                 ndim = 1;
             }
         }

@@ -429,9 +429,6 @@ void ResultTB::writeAbsorptionSpectrum(){
     arma::mat extendedMotif = arma::zeros(system->basisdim, 3);
 
     arma::field<arma::cx_cube> nonConstRhop = system->Rhop;
-    std::cout << "-> nonConstRhop: "                            << std::endl;
-    std::cout <<  nonConstRhop                                  << std::endl;
-    std::cout << "==================="                          << std::endl;
 
     // Full extendedMotif for off-diagonal elements
     arma::Cube<double> extendedMotifFull(nR, norb * norb, 3, arma::fill::zeros); // Create a flattened version
@@ -468,16 +465,6 @@ void ResultTB::writeAbsorptionSpectrum(){
             }
         }
     }
-
-    // Flatten into column-major order for Fortran
-    // arma::vec flattenedMotif = arma::vectorise(extendedMotifFull);
-    // std::cout << "Size of flattenedMotif: " << flattenedMotif.n_elem << std::endl;
-
-    // int flattenedSize = 3*nR*norb*norb;
-    // std::cout << "3*nR*norb*norb =  " << flattenedSize << std::endl;
-
-    std::cout << "extendedMotifFull: "  << std::endl;
-    std::cout <<  extendedMotifFull << std::endl;
 
     arma::cx_cube hhop = system->hamiltonianMatrices;
     arma::cube shop(arma::size(hhop));

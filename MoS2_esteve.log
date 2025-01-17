@@ -1,0 +1,38 @@
+Parsing w90 file...
+Parsed Wannier90 _tb.out
++---------------------------------------------------------------------------+
+|                                                                           |
+|                                     Xatu                                  |
+|                              v1.3.1 - 28/03/2024                          |
+|                    https://github.com/alejandrojuria/xatu                 |
+|                                                                           |
+|                                  [Authors]                                |
+| A. J. Uría-Álvarez, J. J. Esteve-Paredes, M. A. García-Blázquez,          |
+| J. J. Palacios                                                            |
+| Universidad Autónoma de Madrid, Spain                                     |
++---------------------------------------------------------------------------+
++---------------------------------------------------------------------------+
+|                                  Parameters                               |
++---------------------------------------------------------------------------+
+System configuration file:    ../esteve/w90_tb/MoS2_spin_wannier_07032024_tb.dat
+Exciton configuration file:   examples/excitonconfig/MoS2_spin_wannier.txt
+
+Number of cells:              102
+Valence bands:                24 25 
+Conduction bands:             26 27 
+
+Gauge used:                   lattice
+Calculation mode:             realspace
+Potential:                    keldysh
+Exchange:                     True
+Exchange potential:           keldysh
+Scissor cut:                  0.000000
++---------------------------------------------------------------------------+
+|                                Initialization                             |
++---------------------------------------------------------------------------+
+Creating BZ mesh... Done. Number of k points in BZ mesh: 10404
+Initializing basis for BSE... Diagonalizing H0 for all k points... Done
+Computing lattice Fourier transform... Done
+
+BSE dimension: 41616
+Initializing Bethe-Salpeter matrix... 

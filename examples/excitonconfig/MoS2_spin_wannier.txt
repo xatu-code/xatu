@@ -1,0 +1,11 @@
+# Label
+MoS2_spin_wannier_exchange
+# Bandlist
+-1 0 1 2
+# Ncells
+102
+# Exchange
+True
+# Dielectric
+1 1 35
+#

@@ -63,6 +63,9 @@ module utils
                 ! begin hamiltonian read
                 do i = 1, nFock
                     read(fp, *) iRn(i, :)
+                    if (Degen(i) == 2) then
+                        write(*,*) iRn(i, :)
+                    end if
                     do j = 1, mSize*mSize
                         read(fp, *) ii, jj, R, Im
                         H(i, ii, jj) = complex(R, Im)

@@ -9,7 +9,7 @@ exciton_file = "hBN_ex.dat"
 sp_file      = "hBN_sp.dat"
 fontsize     = 15
 markersize   = 110  # Adjust size of points in plot
-latex        = True # Set to True if latex is installed
+latex        = False # Set to True if latex is installed
 if latex:
     plt.rcParams.update({
         "text.usetex": True,
@@ -48,11 +48,11 @@ for line in file.readlines():
 
 plt.plot(energy, sigma_xx, "g-", label="xx")
 plt.plot(energy, sigma_yy, "r-", label="yy")
-plt.plot(energy, sigma_sp_xx, "b--", label="sp_xx")
-plt.plot(energy, sigma_sp_yy, "c--", label="sp_yy")
+# plt.plot(energy, sigma_sp_xx, "b--", label="sp_xx")
+# plt.plot(energy, sigma_sp_yy, "c--", label="sp_yy")
 plt.xlabel("E (eV)")
 plt.ylabel(r"$\sigma$ ($e^2/\hbar$)")
 
 plt.legend(fontsize=fontsize/1.5)
-
-plt.show()
+plt.savefig("hBN.png")
+# plt.show()

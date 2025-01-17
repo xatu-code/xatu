@@ -23,6 +23,7 @@ class System : public Lattice {
         arma::urowvec orbitals_;
         arma::cx_cube hamiltonianMatrices_;
         arma::cx_cube overlapMatrices_;
+        arma::field<arma::cx_cube> Rhop_;
 
     // Const references to expose relevant attributes in a read-only way
     public:
@@ -38,6 +39,8 @@ class System : public Lattice {
         const arma::cx_cube& hamiltonianMatrices = hamiltonianMatrices_;
         // Overlap matrices
         const arma::cx_cube& overlapMatrices = overlapMatrices_;
+
+        const arma::field<arma::cx_cube>& Rhop = Rhop_;
 
 
     //// Methods

@@ -426,7 +426,7 @@ void ResultTB::writeAbsorptionSpectrum(){
     }
 
     // standard extendendMotif for other inputs
-    arma::mat extendedMotif = arma::zeros(system->basisdim, 3);
+    // arma::mat extendedMotif = arma::zeros(system->basisdim, 3);
 
     arma::field<arma::cx_cube> nonConstRhop = system->Rhop;
 
@@ -455,15 +455,21 @@ void ResultTB::writeAbsorptionSpectrum(){
         }
     } else {
         //--------------------original ExtendedMotif----------------//
-        int it = 0;
-        for(int i = 0; i < system->natoms; i++){
-            arma::rowvec atom = system->motif.row(i).subvec(0, 2);
-            int species = system->motif.row(i)(3);
-            for(int j = 0; j < system->orbitals(species); j++){
-                extendedMotif.row(it) = atom; 
-                it++;
-            }
+    int it = 0;
+    for (int i = 0; i < system->natoms; i++) {
+        arma::rowvec atom = system->motif.row(i).subvec(0, 2); // Extract XYZ coordinates
+        int species = system->motif.row(i)(3);
+        
+        for (int j = 0; j < system->orbitals(species); j++) {
+            // Fill the diagonal of the first slice of the cube matrix
+            int diagonalIndex = it * system->basisdim + it; // Calculate the flattened diagonal index
+            extendedMotifFull(0, diagonalIndex, 0) = atom(0); // X coordinate
+            extendedMotifFull(0, diagonalIndex, 1) = atom(1); // Y coordinate
+            extendedMotifFull(0, diagonalIndex, 2) = atom(2); // Z coordinate
+            it++;
         }
+}
+
     }
 
     arma::cx_cube hhop = system->hamiltonianMatrices;
@@ -484,15 +490,10 @@ void ResultTB::writeAbsorptionSpectrum(){
     arma::mat eigval_sp = exciton->eigvalKStack;
     arma::cx_cube eigvec_sp = exciton->eigvecKStack;
 
-    if(!system->Rhop.empty()) {
-        skubo_w_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
-                 Rvec.memptr(), R.memptr(), extendedMotifFull.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
-                 rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr());
-    } else {
-        skubo_w_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
-                 Rvec.memptr(), R.memptr(), extendedMotif.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
-                 rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr());
-    }
+
+    skubo_w_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
+             Rvec.memptr(), R.memptr(), extendedMotifFull.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
+             rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr());
 }
 
 /**

@@ -48,40 +48,20 @@ namespace xatu {
             // std::cout << "Line " << i+1 << ": " << line << std::endl;
         }
 
-        // change to check a threshold between highest
-        // 2D: motif(z) and Rn(2,2)
-        // 1D: motif(x or y) and Rn(1,1) or Rn(0,0)
-        if (Rn(2,2) >= 100) {
-            ndim = 2;
-            if (Rn(1,1) >= 100 || Rn(0,0) >= 100) {
-                ndim = 1;
-            }
-        }
 
-        ndim = 2;
-        
-        lattice = arma::mat(ndim, 3, arma::fill::zeros);
-        for (int i = 0; i < ndim; i++) {
-            lattice(i, 0) = Rn(i,0);
-            lattice(i, 1) = Rn(i,1);
-            lattice(i, 2) = Rn(i,2);
-        }
-
-
-
-        // Parse ndim and nFock values 
+        // Parse mSize and nFock values 
         std::getline(m_file, line);  // Move to the next line
         std::istringstream iss(line);
-        iss >> mSize; // this is not ndim!!
-        iss.clear();  // Clear any flags (like EOF)
+        iss >> mSize;
+        iss.clear(); 
 
 
-        std::getline(m_file, line);  // Move to the next line
-        iss.str(line);  // Assign new content to the stream
+        std::getline(m_file, line);
+        iss.str(line);
         iss >> nFock;
-        iss.clear();  // Clear any flags (like EOF)
+        iss.clear(); 
 
-        std::getline(m_file, line);  // Move to the next line
+        std::getline(m_file, line); 
 
         Degen = arma::irowvec(nFock, arma::fill::zeros); // armadillo is faster with columns
 
@@ -97,7 +77,7 @@ namespace xatu {
             for (int j = 0; j < degenPerLine; j++) {
                 iss >> Degen(i * degenPerLine + j);
             }
-            std::getline(m_file, line);  // Move to the next line
+            std::getline(m_file, line);
             iss.clear();
         }
 
@@ -106,7 +86,7 @@ namespace xatu {
         for (int j = 0; j < remainder; ++j) {
             iss >> Degen(numLines * degenPerLine + j);
         }
-        std::getline(m_file, line);  // Move to the next line
+        std::getline(m_file, line); 
         iss.clear(); 
 
 
@@ -121,8 +101,8 @@ namespace xatu {
             std::getline(m_file, line); // Skip blank line if not the last
             iss.str(line);
             iss >> iRn(i, 0) >> iRn(i, 1) >> iRn(i, 2);
-            iss.clear(); 
-            
+            iss.clear();
+
             // Loop through rows and columns for mSize x mSize block
             for (int j = 0; j < mSize; j++) {
                 for (int k = 0; k < mSize; k++) {
@@ -137,7 +117,7 @@ namespace xatu {
                 }
             }
             // fockMatrices.slice(i) /= Degen(i);  // correcting double-counted neighbors
-            std::getline(m_file, line); // Skip blank line if not the last
+            std::getline(m_file, line);
         }
 
         bravaisVectors = arma::dmat(nFock, 3, arma::fill::zeros);
@@ -152,15 +132,41 @@ namespace xatu {
             bravaisVectors(i, 2) = a3;
         }
 
+        //--------------- check dimension of the system --------------------//
+        ndim = 1;
 
+        // Check if any z-component (column 2) is non-zero
+        for (int i = 0; i < iRn.n_rows; ++i) {
+            if (iRn(i, 2) != 0) {
+                ndim = 3;
+                break;  // No need to check further if 3D is confirmed
+            }
+        }
+
+        // If not 3D, check y-components (column 1)
+        if (ndim == 1) {
+            for (int i = 0; i < iRn.n_rows; ++i) {
+                if (iRn(i, 1) != 0) {
+                    ndim = 2;
+                    break;
+                }
+            }
+        }
+        // defines lattice according to ndim
+        lattice = arma::mat(ndim, 3, arma::fill::zeros);
+        for (int i = 0; i < ndim; i++) {
+            lattice(i, 0) = Rn(i,0);
+            lattice(i, 1) = Rn(i,1);
+            lattice(i, 2) = Rn(i,2);
+        }
+
+        //----------------------PositionMatrixElements-----------------------------//
         Rhop = arma::field<arma::cx_cube>(nFock); // Initialize field with nFock elements
         // Initialize each field element (cx_cube) individually
         for (int i = 0; i < nFock; i++) {
             Rhop(i) = arma::cx_cube(mSize, mSize, 3, arma::fill::zeros);
         }
 
-
-        //----------------------PositionMatrixElements-----------------------------//
         // Parse orbital localization data (Rhop) - diagonal is motif
         for (int i = 0; i < nFock; i++) {
 
@@ -183,12 +189,11 @@ namespace xatu {
                 }
             }
 
-            std::getline(m_file, line);  // Skip blank line if not last
+            std::getline(m_file, line);
         }
 
 
         //----------------------MOTIF-----------------------------//
-        // Ensure motif is complex to handle the complex entries from Rhop
         motif = arma::mat(mSize, 4, arma::fill::zeros);
         int diag = 0;
         for (int i = 0; i < nFock; i++) {   
@@ -215,36 +220,29 @@ namespace xatu {
  * representations within the Wannier90Configuration class for downstream usage.
  * @return void
  */
-/**
-* Method to write all the extracted information into a struct.
-* @return void 
-*/
+
     void Wannier90Configuration::mapContent(bool debug) {
         
         // Fill in the system info structure with relevant data
 
-        systemInfo.ndim             = ndim;                        // system dimension
+        systemInfo.filling          = filling;           /* missing on w90 file, providede by user */
+        systemInfo.ndim             = ndim;              // system dimension
         systemInfo.bravaisLattice   = lattice;           // Store bravais lattice
         systemInfo.bravaisVectors   = bravaisVectors;    // Store bravais nieghbors vectors
-        systemInfo.motif            = motif;                      // Store motif localization data
-        systemInfo.hamiltonian      = fockMatrices;         // Store Hamiltonian
-        systemInfo.filling          = filling;                  /* missing on w90 file */
-        systemInfo.Rhop             = Rhop;               // plans ?
+        systemInfo.motif            = motif;             // Store motif localization data
+        systemInfo.hamiltonian      = fockMatrices;      // Store Hamiltonian
 
-        // int norbitals_size = motif.n_rows;
         arma::urowvec norbitals = arma::zeros<arma::urowvec>(mSize);
         for (int i = 0; i < mSize; i++){
-            // norbitals(i) = (std::floor(std::sqrt(mSize)))/4;
             norbitals(i) = 1;
         }
         systemInfo.norbitals      = norbitals;
 
         // Debug output
-        if (false) {
+        if (debug) {
             std::cout << "========================" << std::endl;
             std::cout << "||     PARSED VALUES  ||" << std::endl;
             std::cout << "========================" << std::endl;
-            // std::cout << "Number of Fock matrices (nFock): " << systemInfo.nFock << "\n";
             std::cout << "Matrix size (mSize): " << mSize               << std::endl;
 
             std::cout << "No. of Fock matrices: "               << nFock    << std::endl;
@@ -254,14 +252,14 @@ namespace xatu {
             // std::cout << systemInfo.bravaisLattice                      << std::endl;
             // std::cout << "-------------------"                          << std::endl;
 
-            std::cout << "Degen: "                             << std::endl;
+            std::cout << "Degeneracies: "                             << std::endl;
             std::cout <<  Degen                                 << std::endl;
             std::cout << "-------------------"                          << std::endl;
 
-            // std::cout << "-------------------"                          << std::endl;
-            // std::cout << "bravaisVectors: "                             << std::endl;
-            // std::cout << systemInfo.bravaisVectors                      << std::endl;
-            // std::cout << "-------------------"                          << std::endl;
+            std::cout << "-------------------"                          << std::endl;
+            std::cout << "bravaisVectors: "                             << std::endl;
+            std::cout << systemInfo.bravaisVectors                      << std::endl;
+            std::cout << "-------------------"                          << std::endl;
 
             std::cout << "System Dimension: "   << systemInfo.ndim      << std::endl;
 
@@ -272,17 +270,17 @@ namespace xatu {
             std::cout << systemInfo.motif                           << std::endl;
             std::cout << "-------------------"                          << std::endl;
 
-            std::cout << "iRn index: "                         << std::endl;
-            std::cout <<  iRn                         << std::endl;
-            std::cout << "========================" << std::endl;
+            // std::cout << "iRn index: "                         << std::endl;
+            // std::cout <<  iRn                         << std::endl;
+            // std::cout << "========================" << std::endl;
 
-            std::cout << "Hamiltonian matrix: "                         << std::endl;
-            std::cout << systemInfo.hamiltonian                         << std::endl;
-            std::cout << "========================" << std::endl;
+            // std::cout << "Hamiltonian matrix: "                         << std::endl;
+            // std::cout << systemInfo.hamiltonian                         << std::endl;
+            // std::cout << "========================" << std::endl;
 
-            std::cout << "Rhop: "                                       << std::endl;
-            std::cout <<  Rhop                                           << std::endl;
-            std::cout << "==================="                          << std::endl;
+            // std::cout << "Rhop: "                                       << std::endl;
+            // std::cout <<  Rhop                                           << std::endl;
+            // std::cout << "==================="                          << std::endl;
             std::cout << std::setprecision(15) << systemInfo.hamiltonian.slice(0)                         << std::endl;
         }
     }

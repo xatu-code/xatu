@@ -22,17 +22,8 @@ class Wannier90Configuration : public SystemConfiguration {
 
         void parseContent(int);
 
-    /* to be added: organize parsers into functions */
-    // private:
-        // arma::cx_cube enforceHermiticity(arma::cx_cube);
-    //     void parseBravaisLattice();
-    //     void parseHamiltonian();
-    //     void parseDegeneracy();
-    //     void parseMotif();
-
     protected:
         void mapContent(bool debug = false);
-
 
 };
 

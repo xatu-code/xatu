@@ -454,6 +454,7 @@ void ResultTB::writeAbsorptionSpectrum(){
             }
         }
     } else {
+        std::cout << "Rhop is empty! Extending motif with zeros..." << std::endl;
         //--------------------original ExtendedMotif----------------//
     int it = 0;
     for (int i = 0; i < system->natoms; i++) {

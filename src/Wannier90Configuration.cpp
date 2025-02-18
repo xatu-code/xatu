@@ -231,6 +231,7 @@ namespace xatu {
         systemInfo.bravaisVectors   = bravaisVectors;    // Store bravais nieghbors vectors
         systemInfo.motif            = motif;             // Store motif localization data
         systemInfo.hamiltonian      = fockMatrices;      // Store Hamiltonian
+        systemInfo.Rhop             = Rhop;
 
         arma::urowvec norbitals = arma::zeros<arma::urowvec>(mSize);
         for (int i = 0; i < mSize; i++){

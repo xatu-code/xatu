@@ -1,0 +1,49 @@
+Testing model file parsing...           [1;32m Success [0m                    
+Testing CRYSTAL file parsing...         [1;32m Success [0m                    
+Testing exciton file parsing...         [1;32m Success [0m                    
+Testing TB hBN energies (fulldiag)...   [1;32m Success [0m                    
+Testing TB hBN energies (Davidson)...   [1;32m Success [0m                    
+Testing TB hBN energies (Lanczos)...    [1;32m Success [0m                    
+Testing TB hBN energies (reciprocal)... [1;32m Success [0m                    
+Testing TB hBN reciprocal w.f...        [1;32m Success [0m                    
+Testing TB hBN real-space w.f...        [1;32m Success [0m                    
+Testing TB hBN conductivity...          
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+tests.x is a Catch v2.13.10 host application.
+Run with -? for options
+
+-------------------------------------------------------------------------------
+TB hBN absorption
+-------------------------------------------------------------------------------
+tests.cpp:371
+...............................................................................
+
+tests.cpp:395: FAILED:
+  REQUIRE_THAT( cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-7) )
+with expansion:
+  137.0009199106 is within 0.0000001 of 47.4140063784
+
+Testing TB hBN spinful...               [1;32m Success [0m                    
+Testing TB hBN spin...                  [1;32m Success [0m                    
+Testing DFT hBN...                      [1;32m Success [0m                    
+Testing MoS2 energies...                [1;32m Success [0m                    
+Testing MoS2 reciprocal w.f...          [1;32m Success [0m                    
+Testing MoS2 spin...                    [1;32m Success [0m                    
+Testing MoS2 exciton bands...           [1;32m Success [0m                    
+Testing MoS2 with exchange...           [1;32m Success [0m                    
+Testing MoS2 with reduced BZ...         [1;32m Success [0m                    
+Testing MoS2 conductivity...            -------------------------------------------------------------------------------
+MoS2 absorption
+-------------------------------------------------------------------------------
+tests.cpp:776
+...............................................................................
+
+tests.cpp:800: FAILED:
+  REQUIRE_THAT( cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-7) )
+with expansion:
+  inf is within 0.0000001 of 37.2792093358
+
+===============================================================================
+test cases:  20 |  18 passed | 2 failed
+assertions: 181 | 179 passed | 2 failed
+

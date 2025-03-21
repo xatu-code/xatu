@@ -3,6 +3,7 @@
 #include "xatu/ConfigurationBase.hpp"
 #include "xatu/Lattice.hpp"
 #include "xatu/CRYSTALConfiguration.hpp"
+#include "xatu/Wannier90Configuration.hpp"
 #include "xatu/Exciton.hpp"
 #include "xatu/ExcitonTB.hpp"
 #include "xatu/ExcitonConfiguration.hpp"

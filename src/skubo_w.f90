@@ -232,7 +232,7 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
 
   if (convert_to_au) then
     Rvec=Rvec/0.52917721067121d0
-    ! B=B/0.52917721067121d0 
+    B=B/0.52917721067121d0 
     R=R/0.52917721067121d0 
     hhop=hhop/27.211385d0
     rkx=rkx*0.52917721067121d0

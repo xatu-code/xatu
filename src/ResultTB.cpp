@@ -257,15 +257,51 @@ arma::cx_mat ResultTB::excitonOscillatorStrength(){
 
     // arma::mat B = system->motif.cols(0, 2);
     arma::mat extendedMotif = arma::zeros(system->basisdim, 3);
-    int it = 0;
-    for(int i = 0; i < system->natoms; i++){
-        arma::rowvec atom = system->motif.row(i).subvec(0, 2);
-        int species = system->motif.row(i)(3);
-        for(int j = 0; j < system->orbitals(species); j++){
-            extendedMotif.row(it) = atom; 
-            it++;
+    // arma::field<arma::cx_cube> nonConstRhop = system->Rhop;
+
+    // Full extendedMotif for off-diagonal elements
+    arma::Cube<double> extendedMotifFull(nR, norb * norb, 3, arma::fill::zeros); // Create a flattened version
+
+    if (!system->Rhop.empty()) {
+        std::cout << "Rhop is NOT empty! Filling extendedMotif with it..." << std::endl;
+
+        // Iterate over Rhop to populate extendedMotif
+        for (int iFock = 0; iFock < nR; iFock++) {
+            arma::cx_cube currentCube = system->Rhop(iFock); // Extract current cx_cube from Rhop
+
+            // Iterate over the 3 slices (components)
+            for (int slice = 0; slice < 3; slice++) {
+                arma::mat realPart = arma::real(currentCube.slice(slice)); // Extract real part of the slice
+
+                // Flatten the norb x norb matrix into norb * norb
+                for (int row = 0; row < norb; row++) {
+                    for (int col = 0; col < norb; col++) {
+                        int flattenedIndex = row * norb + col; // Flatten (row, col) into a 1D index
+                        extendedMotifFull(iFock, flattenedIndex, slice) = realPart(row, col);
+                    }
+                }
+            }
         }
+    } else {
+        std::cout << "Rhop is empty! Extending motif with zeros..." << std::endl;
+        //--------------------original ExtendedMotif----------------//
+        int it = 0;
+        for (int i = 0; i < system->natoms; i++) {
+            arma::rowvec atom = system->motif.row(i).subvec(0, 2); // Extract XYZ coordinates
+            int species = system->motif.row(i)(3);
+            
+            for (int j = 0; j < system->orbitals(species); j++) {
+                // Fill the diagonal of the first slice of the cube matrix
+                int diagonalIndex = it * system->basisdim + it; // Calculate the flattened diagonal index
+                extendedMotifFull(0, diagonalIndex, 0) = atom(0); // X coordinate
+                extendedMotifFull(0, diagonalIndex, 1) = atom(1); // Y coordinate
+                extendedMotifFull(0, diagonalIndex, 2) = atom(2); // Z coordinate
+                it++;
+            }
+        }
+
     }
+
     arma::cx_cube hhop = system->hamiltonianMatrices;
     arma::cube shop(arma::size(hhop));
     if (system->overlapMatrices.empty()){
@@ -290,7 +326,7 @@ arma::cx_mat ResultTB::excitonOscillatorStrength(){
     bool convert_to_au = true;
 
     exciton_oscillator_strength_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
-             Rvec.memptr(), R.memptr(), extendedMotif.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
+             Rvec.memptr(), R.memptr(), extendedMotifFull.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
              rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr(),
              vme, vme_ex.memptr(), &convert_to_au);
 
@@ -425,17 +461,54 @@ void ResultTB::writeAbsorptionSpectrum(){
         R.row(i) = system->bravaisLattice.row(i);
     }
 
-    // arma::mat B = system->motif.cols(0, 2);
-    arma::mat extendedMotif = arma::zeros(system->basisdim, 3);
-    int it = 0;
-    for(int i = 0; i < system->natoms; i++){
-        arma::rowvec atom = system->motif.row(i).subvec(0, 2);
-        int species = system->motif.row(i)(3);
-        for(int j = 0; j < system->orbitals(species); j++){
-            extendedMotif.row(it) = atom; 
-            it++;
+    // standard extendendMotif for other inputs
+    // arma::mat extendedMotif = arma::zeros(system->basisdim, 3);
+
+    arma::field<arma::cx_cube> nonConstRhop = system->Rhop;
+
+    // Full extendedMotif for off-diagonal elements
+    arma::Cube<double> extendedMotifFull(nR, norb * norb, 3, arma::fill::zeros); // Create a flattened version
+
+    if (!system->Rhop.empty()) {
+        std::cout << "Rhop is NOT empty! Filling extendedMotif with it..." << std::endl;
+
+        // Iterate over Rhop to populate extendedMotif
+        for (int iFock = 0; iFock < nR; iFock++) {
+            arma::cx_cube currentCube = system->Rhop(iFock); // Extract current cx_cube from Rhop
+
+            // Iterate over the 3 slices (components)
+            for (int slice = 0; slice < 3; slice++) {
+                arma::mat realPart = arma::real(currentCube.slice(slice)); // Extract real part of the slice
+
+                // Flatten the norb x norb matrix into norb * norb
+                for (int row = 0; row < norb; row++) {
+                    for (int col = 0; col < norb; col++) {
+                        int flattenedIndex = row * norb + col; // Flatten (row, col) into a 1D index
+                        extendedMotifFull(iFock, flattenedIndex, slice) = realPart(row, col);
+                    }
+                }
+            }
         }
+    } else {
+        std::cout << "Rhop is empty! Extending motif with zeros..." << std::endl;
+        //--------------------original ExtendedMotif----------------//
+        int it = 0;
+        for (int i = 0; i < system->natoms; i++) {
+            arma::rowvec atom = system->motif.row(i).subvec(0, 2); // Extract XYZ coordinates
+            int species = system->motif.row(i)(3);
+            
+            for (int j = 0; j < system->orbitals(species); j++) {
+                // Fill the diagonal of the first slice of the cube matrix
+                int diagonalIndex = it * system->basisdim + it; // Calculate the flattened diagonal index
+                extendedMotifFull(0, diagonalIndex, 0) = atom(0); // X coordinate
+                extendedMotifFull(0, diagonalIndex, 1) = atom(1); // Y coordinate
+                extendedMotifFull(0, diagonalIndex, 2) = atom(2); // Z coordinate
+                it++;
+            }
+        }
+
     }
+
     arma::cx_cube hhop = system->hamiltonianMatrices;
     arma::cube shop(arma::size(hhop));
     if (system->overlapMatrices.empty()){
@@ -454,8 +527,9 @@ void ResultTB::writeAbsorptionSpectrum(){
     arma::mat eigval_sp = exciton->eigvalKStack;
     arma::cx_cube eigvec_sp = exciton->eigvecKStack;
 
+
     skubo_w_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
-             Rvec.memptr(), R.memptr(), extendedMotif.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
+             Rvec.memptr(), R.memptr(), extendedMotifFull.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
              rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr());
 }
 

@@ -26,11 +26,26 @@ void ExcitonTB::initializeExcitonAttributes(int ncell, const arma::ivec& bands,
     this->eps_m_      = parameters(0);
     this->eps_s_      = parameters(1);
     this->r0_         = parameters(2);
+    // Set ry
+    if (parameters.n_elem >= 4) {
+        this->ry_ = parameters(3);
+    } else {
+        this->ry_ = r0_;
+    }
+
+    // Set rz
+    if (parameters.n_elem >= 5) {
+        this->rz_ = parameters(4);
+    } else {
+        this->rz_ = 0.5 * (this->r0_ + this->ry_);
+    }
+    
     this->cutoff_     = ncell/2.5; // Default value, seems to preserve crystal point group
 
     if(r0 == 0){
         throw std::invalid_argument("Error: r0 must be non-zero");
     }
+
 }
 
 /**
@@ -44,7 +59,7 @@ void ExcitonTB::initializeExcitonAttributes(const ExcitonConfiguration& cfg){
     int ncell        = cfg.excitonInfo.ncell;
     int nbands       = cfg.excitonInfo.nbands;
     arma::ivec bands = cfg.excitonInfo.bands;
-    arma::rowvec parameters = {cfg.excitonInfo.eps(0), cfg.excitonInfo.eps(1), cfg.excitonInfo.eps(2)};
+    arma::rowvec parameters = arma::conv_to<arma::rowvec>::from(cfg.excitonInfo.eps);
     arma::rowvec Q   = cfg.excitonInfo.Q;
 
     if (bands.empty()){
@@ -220,20 +235,35 @@ ExcitonTB::~ExcitonTB(){};
 
 /**
  * Method to set the parameters of the Keldysh potential, namely the environmental
- * dielectric constants and the effective screening length.
- * @param parameters Vector with the three parameters, '{eps_m, eps_s, r0}'. 
+ * dielectric constants and the effective screening lengths.
+ * @param parameters Vector with 3 to 5 parameters: '{eps_m, eps_s, r0[, ry[, rz]]}'.
  * @return void
  */
-void ExcitonTB::setParameters(const arma::rowvec& parameters){
-    if(parameters.n_elem == 3){
-        eps_m_ = parameters(0);
-        eps_s_ = parameters(1);
-        r0_    = parameters(2);
+void ExcitonTB::setParameters(const arma::rowvec& parameters) {
+    if (parameters.n_elem < 3) {
+        std::cout << "parameters array must be at least 3D (eps_m, eps_s, r0)" << std::endl;
+        return;
     }
-    else{
-        std::cout << "parameters array must be 3d (eps_m, eps_s, r0)" << std::endl;
+
+    eps_m_ = parameters(0);
+    eps_s_ = parameters(1);
+    r0_    = parameters(2);
+
+    // Set ry
+    if (parameters.n_elem >= 4) {
+        ry_ = parameters(3);
+    } else {
+        ry_ = r0_;
+    }
+
+    // Set rz
+    if (parameters.n_elem >= 5) {
+        rz_ = parameters(4);
+    } else {
+        rz_ = 0.5 * (r0_ + ry_);
     }
 }
+
 
 /**
  * Sets the parameters of the Keldysh potential.
@@ -242,11 +272,24 @@ void ExcitonTB::setParameters(const arma::rowvec& parameters){
  * @param r0 Effective screeening length.
  * @return void 
  */
-void ExcitonTB::setParameters(double eps_m, double eps_s, double r0){
-    // TODO: Introduce additional comprobations regarding value of parameters (positive)
+void ExcitonTB::setParameters(double eps_m, double eps_s, double r0, double ry, double rz){
     eps_m_ = eps_m;
     eps_s_ = eps_s;
     r0_    = r0;
+
+    // Set ry
+    if (ry != 0) {
+        ry_ = ry;
+    } else {
+        ry_ = r0;
+    }
+
+    // Set rz
+    if (rz != 0) {
+        rz_ = rz;
+    } else {
+        rz_ = 0.5 * (r0 + ry);
+    }
 }
 
 /**
@@ -344,17 +387,18 @@ void ExcitonTB::STVH0(double X, double *SH0) {
  * @param r Distance at which we evaluate the potential.
  * @return Value of Keldysh potential, V(r).
  */
-double ExcitonTB::keldysh(double r){
+double ExcitonTB::keldysh(arma::rowvec r){
     double eps_bar = (eps_m + eps_s)/2;
     double SH0;
     double cutoff = arma::norm(system->bravaisLattice.row(0)) * cutoff_ + 1E-5;
-    double R = abs(r)/r0;
+    arma::rowvec R0 = {r0,ry,rz};
+    double R = abs(arma::norm(r/R0));
     double potential_value;
-    if(r == 0){
+    if(R == 0){
         STVH0(regularization/r0, &SH0);
         potential_value = ec/(8E-10*eps0*eps_bar*r0)*(SH0 - y0(regularization/r0));
     }
-    else if (r > cutoff){
+    else if (R > cutoff){
         potential_value = 0.0;
     }
     else{
@@ -371,14 +415,65 @@ double ExcitonTB::keldysh(double r){
  * @param regularization Regularization distance to remove divergence at r=0.
  * @return Value of Coulomb potential, V(r).
  */
-double ExcitonTB::coulomb(double r){
+double ExcitonTB::coulomb(arma::rowvec r){
     double cutoff = arma::norm(system->bravaisLattice.row(0)) * cutoff_ + 1E-5;
-    r = abs(r);
-    if (r > cutoff){
+    double R = abs(arma::norm(r));
+    if (R > cutoff){
         return 0.0;
     }
-    return (r != 0) ? ec/(4E-10*PI*eps0*r) : ec*1E10/(4*PI*eps0*regularization);    
+    return (R != 0) ? ec/(4E-10*PI*eps0*R) : ec*1E10/(4*PI*eps0*regularization);    
 }
+
+// Calculates epsilon(q) for quasi-2D RK real-space potential
+// double ExcitonTB::epsilon_q(arma::rowvec q) {
+//     // reflection coeffs
+//     double pt = (eps_m - 1)/(eps_m + 1);
+//     double pb = (eps_s - 1)/(eps_s + 1);
+
+//     double e_qd2 = std::exp(-q*d/2);
+//     double e_qd  = e_qd2*e_qd2;
+
+//     // denominators
+//     double Dt = 1 + q*r0
+//                 - q*r0*(1+pt)*e_qd2
+//                 - (1 - q*r0)*pt*e_qd;
+//     double Db = 1 + q*r0
+//                 - q*r0*(1+pb)*e_qd2
+//                 - (1 - q*r0)*pb*e_qd;
+
+//     // numerators
+//     double Nt = (1+q*r0)*(1+q*r0z)
+//                 + ((1-pt) - (1+pt)*q*r0z)*q*r0*e_qd2
+//                 + (1-q*r0)*(1-q*r0z)*pt*e_qd;
+//     double Nb = (1+q*r0)*(1+q*r0z)
+//                 + ((1-pb) - (1+pb)*q*r0z)*q*r0*e_qd2
+//                 + (1-q*r0)*(1-q*r0z)*pb*e_qd;
+
+//     return 0.5*(Nt/Dt + Nb/Db);
+// }
+
+/*
+    Quasi-2D Rytova-Keldysh potential in Real space 
+    as in VanTuan2018 DOI: 10.1103/PhysRevB.98.125308
+*/
+// double ExcitonTB::Q2DRK(double r){
+//     // Pre-factor e^2/(2π eps_0)
+//     double pref = e_charge*e_charge/(2*pi*eps0);
+
+//     // Set up trapezoidal grid in q
+//     double dq = q_max / (Nq-1);
+//     double sum = 0.0;
+
+//     for(int i=0; i < Nq; i++){
+//         double q    = i * dq;
+//         double wgt  = (i == 0 || i == Nq-1 ? 0.5 : 1.0);
+//         double eps  = epsilon_q(q);
+//         double J0   = boost::math::cyl_bessel_j(0, q*r);
+//         sum += wgt * q * J0 / eps;
+//     }
+
+//     return pref * sum * dq;
+// }
 
 /**
  * Method to select the potential to be used in the of the exciton calculation.
@@ -445,8 +540,9 @@ std::complex<double> ExcitonTB::motifFourierTransform(int fAtomIndex, int sAtomI
 
     for(int n = 0; n < cells.n_rows; n++){
         arma::rowvec cell = cells.row(n);
-        double module = arma::norm(cell + firstAtom - secondAtom);
-        Vk += (this->*potential)(module)*std::exp(imag*arma::dot(k, cell));
+        // double module = arma::norm(cell + firstAtom - secondAtom);
+        arma::rowvec dist = cell + firstAtom - secondAtom;
+        Vk += (this->*potential)(dist)*std::exp(imag*arma::dot(k, cell));
     }
     Vk /= pow(totalCells, 1);
 
@@ -580,6 +676,7 @@ std::complex<double> ExcitonTB::reciprocalInteractionTerm(const arma::cx_vec& co
         Ic = blochCoherenceFactor(coefsKQ, coefsK2Q, kQ, k2Q, G);
         Iv = blochCoherenceFactor(coefsK, coefsK2, k, k2, G);
 
+        // must change this to include Q2DRK...
         term += Ic*conj(Iv)*keldyshFT(k - k2 + G);
     }
 

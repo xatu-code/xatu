@@ -123,8 +123,8 @@ end do
 
 
 !excitons
-do ialpha=1,2
-  do ialphap=1,2
+do ialpha=1,3
+  do ialphap=1,3
     call broad_vector(type_broad,norb_ex_cut,e_ex,skubo_ex_int(ialpha,ialphap,:), &
     nw,wp,sigma_w_ex(ialpha,ialphap,:),eta)
   end do
@@ -163,7 +163,7 @@ write(60,*) '' ! Empty line
 do iex=1,norb_ex_cut
   write(60,*) e_ex(iex)*27.211385d0,realpart(vme_ex(1,iex,1)), imagpart(vme_ex(1,iex,1)), &
               realpart(vme_ex(2,iex,1)), imagpart(vme_ex(2,iex,1)), &
-              realpart(vme_ex(3,iex,1)), imagpart(vme_ex(2,iex,1))
+              realpart(vme_ex(3,iex,1)), imagpart(vme_ex(3,iex,1))
 end do
 
 close(50)
@@ -429,15 +429,23 @@ do iR=1,nR
   do ialphap=1,ialpha
     Rx=Rvec(iR,1)
     Ry=Rvec(iR,2)
-    Rz=0.0d0
+
+    ! Check if the z direction is defined (thus periodic)
+    if (Rvec(iR,3) /= 0) then
+      Rz = Rvec(iR,3)
+    else 
+      Rz=rhop(3, iRn, ialpha,ialphap)
+    end if
+
 
     hderhop(1,iR,ialpha,ialphap)=complex(0.0d0,Rx)*hhop(ialpha,ialphap,iR)
     hderhop(2,iR,ialpha,ialphap)=complex(0.0d0,Ry)*hhop(ialpha,ialphap,iR)
-    hderhop(3,iR,ialpha,ialphap)=0.0d0
+    hderhop(3,iR,ialpha,ialphap)=complex(0.0d0,Rz)*hhop(ialpha,ialphap,iR)
   
     sderhop(1,iR,ialpha,ialphap)=complex(0.0d0,Rx)*shop(ialpha,ialphap,iR)
     sderhop(2,iR,ialpha,ialphap)=complex(0.0d0,Ry)*shop(ialpha,ialphap,iR)
-    sderhop(3,iR,ialpha,ialphap)=0.0d0
+    sderhop(3,iR,ialpha,ialphap)=complex(0.0d0,Rz)*shop(ialpha,ialphap,iR)
+
 
   end do
   end do
@@ -484,31 +492,31 @@ sderkernel=0.0d0
 akernel=0.0d0
 pgaugekernel=0.0d0
 do ialpha=1,norb
-do ialphap=1,ialpha   
+  do ialphap=1,ialpha   
 
-  do iRp=1,nR
-    Rx=Rvec(iRp,1)
-    Ry=Rvec(iRp,2)
-    Rz=0.0d0
-    phase=complex(0.0d0,rkx*Rx+rky*Ry+rkz*Rz)
-    factor=exp(phase)     
-              
-    hkernel(ialpha,ialphap)=hkernel(ialpha,ialphap)+ &
-    factor*hhop(ialpha,ialphap,iRp)                
-    skernel(ialpha,ialphap)=skernel(ialpha,ialphap)+ &
-    factor*shop(ialpha,ialphap,iRp)   
-              
-    do nj=1,3 
-      sderkernel(nj,ialpha,ialphap)=sderkernel(nj,ialpha,ialphap)+ &
-      factor*sderhop(nj,iRp,ialpha,ialphap)
-  
-      hderkernel(nj,ialpha,ialphap)=hderkernel(nj,ialpha,ialphap)+ &
-      factor*hderhop(nj,iRp,ialpha,ialphap) 
+    do iRp=1,nR
+      Rx=Rvec(iRp,1)
+      Ry=Rvec(iRp,2)
+      Rz=rhop(3, iRn, ialpha,ialphap)
+      phase=complex(0.0d0,rkx*Rx+rky*Ry+rkz*Rz)
+      factor=exp(phase)     
+                
+      hkernel(ialpha,ialphap)=hkernel(ialpha,ialphap)+ &
+      factor*hhop(ialpha,ialphap,iRp)                
+      skernel(ialpha,ialphap)=skernel(ialpha,ialphap)+ &
+      factor*shop(ialpha,ialphap,iRp)
+                
+      do nj=1,3 
+        sderkernel(nj,ialpha,ialphap)=sderkernel(nj,ialpha,ialphap)+ &
+        factor*sderhop(nj,iRp,ialpha,ialphap)
+    
+        hderkernel(nj,ialpha,ialphap)=hderkernel(nj,ialpha,ialphap)+ &
+        factor*hderhop(nj,iRp,ialpha,ialphap) 
 
-      akernel(nj,ialpha,ialphap)=akernel(nj,ialpha,ialphap)+ &
-      factor*(rhop(nj,iRp,ialpha,ialphap)+ &
-      complex(0.0d0,1.0d0)*sderhop(nj,iRp,ialpha,ialphap))            
-    end do  
+        akernel(nj,ialpha,ialphap)=akernel(nj,ialpha,ialphap)+ &
+        factor*(rhop(nj,iRp,ialpha,ialphap)+ &
+        complex(0.0d0,1.0d0)*sderhop(nj,iRp,ialpha,ialphap))            
+      end do  
   end do
     
   do nj=1,3

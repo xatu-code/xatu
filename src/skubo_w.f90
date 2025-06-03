@@ -272,9 +272,6 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
 
   vme_ex=0.0d0
   
-  !getting some SP variables
-  call hoppings_observables_TB(norb,nR,Rvec,shop,hhop,rhop,sderhop,hderhop)
-  !11/05/2023 JJEP: fill rhop here. Easier to extend to DFT later 
 
   rhop=0.0d0
   do i = 1, nR
@@ -287,6 +284,10 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
         end do
       end do
     end do
+
+  !getting some SP variables
+  call hoppings_observables_TB(norb,nR,Rvec,shop,hhop,rhop,sderhop,hderhop)
+  !11/05/2023 JJEP: fill rhop here. Easier to extend to DFT later 
 
   !Brillouin zone sampling	  
   !!$OMP PARALLEL DO PRIVATE(rkxp,rkyp,rkzp), &
@@ -415,7 +416,7 @@ subroutine hoppings_observables_TB(norb,nR,Rvec,shop,hhop, &
 rhop,sderhop,hderhop)
 
 implicit real*8 (a-h,o-z)
-dimension Rvec(nR,3),rhop(3,nR,norb,norb)
+dimension Rvec(nR,3), rhop(3,nR,norb,norb)
 dimension shop(norb,norb,nR),hhop(norb,norb,nR)
 dimension sderhop(3,nR,norb,norb),hderhop(3,nR,norb,norb)
 
@@ -434,7 +435,7 @@ do iR=1,nR
     if (Rvec(iR,3) /= 0) then
       Rz = Rvec(iR,3)
     else 
-      Rz=rhop(3, iRn, ialpha,ialphap)
+      Rz=rhop(3, iR, ialpha,ialphap)
     end if
 
 
@@ -497,7 +498,13 @@ do ialpha=1,norb
     do iRp=1,nR
       Rx=Rvec(iRp,1)
       Ry=Rvec(iRp,2)
-      Rz=rhop(3, iRn, ialpha,ialphap)
+
+      if (Rvec(iRp, 3) /= 0) then
+        Rz=Rvec(iRp,3)
+      else
+        Rz=0.0d0
+      end if
+
       phase=complex(0.0d0,rkx*Rx+rky*Ry+rkz*Rz)
       factor=exp(phase)     
                 
@@ -611,8 +618,13 @@ do nnp=1,nn
       pgauge(nj,nn,nnp)=pgauge(nj,nn,nnp)+ &
       conjg(amu)*amup*pgaugekernel(nj,ialpha,ialphap)
 
-      vjseudoa(nj,nn,nnp)=vjseudoa(nj,nn,nnp)+ &
-      conjg(amu)*amup*hderkernel(nj,ialpha,ialphap)
+      if (nj == 3) then
+        vjseudoa(nj,nn,nnp)=vjseudoa(nj,nn,nnp)+ &
+        conjg(amu)*amup*hderkernel(nj,ialpha,ialphap)*(e(nnp)-e(nn))
+      else
+        vjseudoa(nj,nn,nnp)=vjseudoa(nj,nn,nnp)+ &
+        conjg(amu)*amup*hderkernel(nj,ialpha,ialphap)
+      end if
         
       vjseudob(nj,nn,nnp)=vjseudob(nj,nn,nnp)+conjg(amu)*amup* &
       (e(nn)*akernel(nj,ialpha,ialphap)-e(nnp)*conjg(akernel(nj,ialphap,ialpha)))* &
@@ -678,12 +690,20 @@ do iw=1,nw
 	  !exponential
     delta_nnp=1.0d0/eta*1.0d0/sqrt(2.0d0*pi)*exp(-0.5d0/(eta**2)*(wp(iw)-e(nn)+e(nnp))**2)
 	  
-          !save oscillator stregths
+      !save oscillator stregths
       do nj=1,3
         do njp=1,3
           skubo=vme(nj,nn,nnp)*vme(njp,nnp,nn)
-          sigma_w_sp(nj,njp,iw)=sigma_w_sp(nj,njp,iw)+ &
-          pi/(dble(npointstotal)*vcell)*factor1*skubo*delta_nnp
+          if (nj == 3 .OR. njp == 3 .AND. nj /= njp) then
+            sigma_w_sp(nj,njp,iw)=sigma_w_sp(nj,njp,iw)+ &
+            pi/(dble(npointstotal)*vcell)*factor1*skubo*delta_nnp*(e(nn)-e(nnp))
+          else if (nj == 3 .AND. njp == 3) then
+            sigma_w_sp(nj,njp,iw)=sigma_w_sp(nj,njp,iw)+ &
+            pi/(dble(npointstotal)*vcell)*factor1*skubo*delta_nnp*(e(nn)-e(nnp))**2
+          else
+            sigma_w_sp(nj,njp,iw)=sigma_w_sp(nj,njp,iw)+ &
+            pi/(dble(npointstotal)*vcell)*factor1*skubo*delta_nnp
+          end if
         end do
       end do
     		  

@@ -694,16 +694,8 @@ do iw=1,nw
       do nj=1,3
         do njp=1,3
           skubo=vme(nj,nn,nnp)*vme(njp,nnp,nn)
-          if (nj == 3 .OR. njp == 3 .AND. nj /= njp) then
-            sigma_w_sp(nj,njp,iw)=sigma_w_sp(nj,njp,iw)+ &
-            pi/(dble(npointstotal)*vcell)*factor1*skubo*delta_nnp*(e(nn)-e(nnp))
-          else if (nj == 3 .AND. njp == 3) then
-            sigma_w_sp(nj,njp,iw)=sigma_w_sp(nj,njp,iw)+ &
-            pi/(dble(npointstotal)*vcell)*factor1*skubo*delta_nnp*(e(nn)-e(nnp))**2
-          else
-            sigma_w_sp(nj,njp,iw)=sigma_w_sp(nj,njp,iw)+ &
-            pi/(dble(npointstotal)*vcell)*factor1*skubo*delta_nnp
-          end if
+          sigma_w_sp(nj,njp,iw)=sigma_w_sp(nj,njp,iw)+ &
+          pi/(dble(npointstotal)*vcell)*factor1*skubo*delta_nnp
         end do
       end do
     		  

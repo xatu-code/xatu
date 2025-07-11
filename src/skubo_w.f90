@@ -31,7 +31,6 @@ allocatable wp(:)
 allocatable skubo_ex_int(:,:,:)
 allocatable sigma_w_ex(:,:,:)
 
-
 complex*16 hhop
 complex*16 fk_ex
 complex*16 eigvec_stack
@@ -45,6 +44,8 @@ complex*16 sigma_w_ex
 character(100) type_broad
 character(100) file_name_sp
 character(100) file_name_ex
+character(len=:), allocatable :: file_name_strength
+integer :: p_dot
 
 
 pi=acos(-1.0d0)
@@ -157,17 +158,33 @@ do iw=1,nw
               realpart(feps*sigma_w_ex(3,3,iw))
 end do
 
-!write exciton oscillator strengths
-norb_ex_cut=nv_ex*nc_ex*npointstotal
-write(60,*) '' ! Empty line
-do iex=1,norb_ex_cut
-  write(60,*) e_ex(iex)*27.211385d0,realpart(vme_ex(1,iex,1)), imagpart(vme_ex(1,iex,1)), &
-              realpart(vme_ex(2,iex,1)), imagpart(vme_ex(2,iex,1)), &
-              realpart(vme_ex(3,iex,1)), imagpart(vme_ex(3,iex,1))
-end do
-
 close(50)
 close(60)
+
+! Oscillator stregth: append name to exciton spectra
+! assume file_name_ex has been set, e.g. 'some_file.dat'
+p_dot = scan(file_name_ex, '.', .true.)           ! find first “.” from the right
+if (p_dot == 0) then
+  ! no “.” found, just append
+  file_name_strength = trim(file_name_ex)//'_strength'
+else
+  ! insert '_strength' before the dot
+  file_name_strength = file_name_ex(:p_dot-1)//'_strength'//file_name_ex(p_dot:)
+endif
+
+! write exciton oscillator strengths to a separate file
+open(unit=70, file=file_name_strength)
+
+norb_ex_cut = nv_ex*nc_ex*npointstotal
+do iex=1,norb_ex_cut
+  write(70,*) e_ex(iex)*27.211385d0, realpart(vme_ex(1,iex,1)), &
+               imagpart(vme_ex(1,iex,1)), &
+               realpart(vme_ex(2,iex,1)), imagpart(vme_ex(2,iex,1)), &
+               realpart(vme_ex(3,iex,1)), imagpart(vme_ex(3,iex,1))
+end do
+
+close(70)
+
 
 return
 end

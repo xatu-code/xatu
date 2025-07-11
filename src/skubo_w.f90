@@ -166,10 +166,10 @@ close(60)
 p_dot = scan(file_name_ex, '.', .true.)           ! find first “.” from the right
 if (p_dot == 0) then
   ! no “.” found, just append
-  file_name_strength = trim(file_name_ex)//'_strength'
+  file_name_strength = trim(file_name_ex)//'_osc'
 else
   ! insert '_strength' before the dot
-  file_name_strength = file_name_ex(:p_dot-1)//'_strength'//file_name_ex(p_dot:)
+  file_name_strength = file_name_ex(:p_dot-1)//'_osc'//file_name_ex(p_dot:)
 endif
 
 ! write exciton oscillator strengths to a separate file

@@ -428,57 +428,6 @@ double ExcitonTB::coulomb(arma::rowvec r){
     return (R != 0) ? ec/(4E-10*PI*eps0*R) : ec*1E10/(4*PI*eps0*regularization);    
 }
 
-// Calculates epsilon(q) for quasi-2D RK real-space potential
-// double ExcitonTB::epsilon_q(arma::rowvec q) {
-//     // reflection coeffs
-//     double pt = (eps_m - 1)/(eps_m + 1);
-//     double pb = (eps_s - 1)/(eps_s + 1);
-
-//     double e_qd2 = std::exp(-q*d/2);
-//     double e_qd  = e_qd2*e_qd2;
-
-//     // denominators
-//     double Dt = 1 + q*r0
-//                 - q*r0*(1+pt)*e_qd2
-//                 - (1 - q*r0)*pt*e_qd;
-//     double Db = 1 + q*r0
-//                 - q*r0*(1+pb)*e_qd2
-//                 - (1 - q*r0)*pb*e_qd;
-
-//     // numerators
-//     double Nt = (1+q*r0)*(1+q*r0z)
-//                 + ((1-pt) - (1+pt)*q*r0z)*q*r0*e_qd2
-//                 + (1-q*r0)*(1-q*r0z)*pt*e_qd;
-//     double Nb = (1+q*r0)*(1+q*r0z)
-//                 + ((1-pb) - (1+pb)*q*r0z)*q*r0*e_qd2
-//                 + (1-q*r0)*(1-q*r0z)*pb*e_qd;
-
-//     return 0.5*(Nt/Dt + Nb/Db);
-// }
-
-/*
-    Quasi-2D Rytova-Keldysh potential in Real space 
-    as in VanTuan2018 DOI: 10.1103/PhysRevB.98.125308
-*/
-// double ExcitonTB::Q2DRK(double r){
-//     // Pre-factor e^2/(2π eps_0)
-//     double pref = e_charge*e_charge/(2*pi*eps0);
-
-//     // Set up trapezoidal grid in q
-//     double dq = q_max / (Nq-1);
-//     double sum = 0.0;
-
-//     for(int i=0; i < Nq; i++){
-//         double q    = i * dq;
-//         double wgt  = (i == 0 || i == Nq-1 ? 0.5 : 1.0);
-//         double eps  = epsilon_q(q);
-//         double J0   = boost::math::cyl_bessel_j(0, q*r);
-//         sum += wgt * q * J0 / eps;
-//     }
-
-//     return pref * sum * dq;
-// }
-
 /**
  * Method to select the potential to be used in the of the exciton calculation.
  * @param potential Potential to be used in the direct term.

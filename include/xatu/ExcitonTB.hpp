@@ -104,7 +104,6 @@ class ExcitonTB : public Exciton<SystemTB> {
     private:
         // Potentials
         double keldysh(arma::rowvec);
-        double Q2DRK(double);
         void STVH0(double, double*);
         double coulomb(arma::rowvec);
         potptr selectPotential(std::string);

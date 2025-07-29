@@ -99,5 +99,4 @@ ax[1,1].tick_params(labelbottom=True)
 
 plt.tight_layout()
 plt.savefig("kwf.png", dpi=600)
-plt.savefig("kwf.pdf", dpi=600)
 # plt.show()

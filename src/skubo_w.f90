@@ -452,7 +452,7 @@ do iR=1,nR
     if (Rvec(iR,3) /= 0) then
       Rz = Rvec(iR,3)
     else 
-      Rz=rhop(3, iR, ialpha,ialphap)
+      Rz = rhop(3, iR, ialpha,ialphap) ! Quintela et. al. (2023) DOI: 10.1103/PhysRevB.107.235416
     end if
 
 

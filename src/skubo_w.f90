@@ -44,6 +44,8 @@ complex*16 sigma_w_ex
 character(100) type_broad
 character(100) file_name_sp
 character(100) file_name_ex
+character(100) file_name_sp_imag
+character(100) file_name_ex_imag
 character(len=:), allocatable :: file_name_strength
 integer :: p_dot
 
@@ -161,6 +163,47 @@ end do
 close(50)
 close(60)
 
+p_dot = scan(file_name_ex, '.', .true.)           ! find first “.” from the right
+if (p_dot == 0) then
+  ! no “.” found, just append
+  file_name_sp_imag = trim(file_name_sp)//'_imag'
+  file_name_ex_imag = trim(file_name_ex)//'_imag'
+else
+  ! insert '_strength' before the dot
+  file_name_sp_imag = file_name_sp(:p_dot-1)//'_imag'//file_name_sp(p_dot:)
+  file_name_ex_imag = file_name_ex(:p_dot-1)//'_imag'//file_name_ex(p_dot:)
+endif
+
+!write imaginary part of frequency dependent conductivity   
+open(50,file=file_name_sp_imag) 
+open(60,file=file_name_ex_imag) 
+do iw=1,nw
+  feps=1.0d0
+  !feps=4.0d0*pi*1.0d0/137.035999084d0*100.0d0   !absorbance units
+  !eps=4.0d0   !\sigma_0 units
+  write(50,*) wp(iw)*27.211385d0,-imagpart(feps*sigma_w_sp(1,1,iw)), &
+              -imagpart(feps*sigma_w_sp(1,2,iw)), &
+              -imagpart(feps*sigma_w_sp(1,3,iw)), &
+              -imagpart(feps*sigma_w_sp(2,1,iw)), &
+              -imagpart(feps*sigma_w_sp(2,2,iw)), &
+              -imagpart(feps*sigma_w_sp(2,3,iw)), &
+              -imagpart(feps*sigma_w_sp(3,1,iw)), &
+              -imagpart(feps*sigma_w_sp(3,2,iw)), &
+              -imagpart(feps*sigma_w_sp(3,3,iw))                
+  write(60,*) wp(iw)*27.211385d0,imagpart(feps*sigma_w_ex(1,1,iw)), &
+              imagpart(feps*sigma_w_ex(1,2,iw)), &
+              imagpart(feps*sigma_w_ex(1,3,iw)), &
+              imagpart(feps*sigma_w_ex(2,1,iw)), &
+              imagpart(feps*sigma_w_ex(2,2,iw)), &
+              imagpart(feps*sigma_w_ex(2,3,iw)), &
+              imagpart(feps*sigma_w_ex(3,1,iw)), &
+              imagpart(feps*sigma_w_ex(3,2,iw)), &  
+              imagpart(feps*sigma_w_ex(3,3,iw))
+end do
+
+close(50)
+close(60)
+
 ! Oscillator stregth: append name to exciton spectra
 ! assume file_name_ex has been set, e.g. 'some_file.dat'
 p_dot = scan(file_name_ex, '.', .true.)           ! find first “.” from the right
@@ -177,8 +220,8 @@ open(unit=70, file=file_name_strength)
 
 norb_ex_cut = nv_ex*nc_ex*npointstotal
 do iex=1,norb_ex_cut
-  write(70,*) e_ex(iex)*27.211385d0, realpart(vme_ex(1,iex,1)), &
-               imagpart(vme_ex(1,iex,1)), &
+  write(70,*) e_ex(iex)*27.211385d0, &
+               realpart(vme_ex(1,iex,1)), imagpart(vme_ex(1,iex,1)), &
                realpart(vme_ex(2,iex,1)), imagpart(vme_ex(2,iex,1)), &
                realpart(vme_ex(3,iex,1)), imagpart(vme_ex(3,iex,1))
 end do
@@ -703,9 +746,9 @@ do iw=1,nw
         factor1=(fnn-fnnp)/(e(nn)-e(nnp))
       end if
 	  !lorentzian
-      !delta_nnp=1.0d0/pi*aimag(1.0d0/(wp(iw)-e(nn)+e(nnp)-complex(0.0d0,eta)))
+      delta_nnp=1.0d0/pi*aimag(1.0d0/(wp(iw)-e(nn)+e(nnp)-complex(0.0d0,eta)))
 	  !exponential
-    delta_nnp=1.0d0/eta*1.0d0/sqrt(2.0d0*pi)*exp(-0.5d0/(eta**2)*(wp(iw)-e(nn)+e(nnp))**2)
+    ! delta_nnp=1.0d0/eta*1.0d0/sqrt(2.0d0*pi)*exp(-0.5d0/(eta**2)*(wp(iw)-e(nn)+e(nnp))**2)
 	  
       !save oscillator stregths
       do nj=1,3
@@ -730,14 +773,15 @@ subroutine broad_vector(type_broad,n,wn,fn,nw,wp,fw_c,eta)
 implicit real*8 (a-h,o-z)
 
 dimension wn(n),fn(n),fn_real(n),wp(nw),fw_c(nw)
-complex*16 fw_c,fn
+complex*16 fw_c,fn, rbroad
 character(100) type_broad
 pi=acos(-1.0d0)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !wp=0.0d0
 fw_c=0.0d0
 do i=1,n
-fn_real(i)=realpart(fn(i))
+  ! fn_real(i)=realpart(fn(i))
+  fn_real(i) = fn(i)
 end do
 
 do i=1,nw
@@ -745,7 +789,7 @@ do i=1,nw
 do inn=1,n
   rbroad=1.0d0
   if (type_broad.eq.'lorentzian') then
-    rbroad=1.0d0/pi*aimag(1.0d0/(wp(i)-wn(inn)-complex(0.0d0,1.0d0)*eta))
+    rbroad=1.0d0/pi * (1.0d0/(wp(i)-wn(inn)-complex(0.0d0,1.0d0)*eta))
   end if
   if (type_broad.eq.'gaussian') then
     rbroad=1.0d0/eta*1.0d0/sqrt(2.0d0*pi)*exp(-0.5d0/(eta**2)*(wp(i)-wn(inn))**2)

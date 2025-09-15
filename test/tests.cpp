@@ -273,6 +273,31 @@ TEST_CASE("Exciton file parsing", "[excitonfile_parsing]"){
     std::cout.clear();
     std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
+
+TEST_CASE("Exciton file parsing - anisotropic", "[excitonfile_parsing_anisotropic]"){
+
+    std::cout.clear();
+    std::cout << std::setw(40) << std::left << "Testing anisotropic exciton file parsing... ";
+    std::cout.setstate(std::ios_base::failbit);
+
+    std::string excitonconfig = "./data/hBN_anisotropic.txt";
+    xatu::ExcitonConfiguration config = xatu::ExcitonConfiguration(excitonconfig);
+
+    std::string expectedName = "hBN_ani";
+    int expectedNcell = 30;
+    int expectedNbands = 1;
+    arma::vec expectedDielectric = {1, 1, 10, 25, 35};
+
+    REQUIRE(config.excitonInfo.ncell == expectedNcell);
+    REQUIRE(config.excitonInfo.nbands == expectedNbands);
+    for (uint i = 0; i < expectedDielectric.n_elem; i++){
+        REQUIRE(config.excitonInfo.eps(i) == expectedDielectric(i));
+    }
+    REQUIRE(xatu::array2hash(config.excitonInfo.Q) == 0);
+
+    std::cout.clear();
+    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
+}
     
 TEST_CASE("TB hBN energies (full diagonalization)", "[tb-hBN-fulldiag]"){
 
@@ -759,6 +784,70 @@ TEST_CASE("Wannier hBN", "[w90-hBN]"){
 
     std::cout.clear();
     std::cout << "\033[1;32m Success \033[0m" << std::endl;
+}
+
+TEST_CASE("TB hBN-ani energies (full diagonalization)", "[tb-hBN-ani-fulldiag]"){
+
+    std::cout.clear();
+    std::cout << std::setw(40) << std::left << "Testing TB hBN-ani energies (fulldiag)... ";
+    std::cout.setstate(std::ios_base::failbit);
+
+    int ncell = 20;
+    int nstates = 3;
+
+    std::string modelfile = "../examples/material_models/hBN.model";    
+    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+
+    xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10, 25, 35});
+
+    exciton.brillouinZoneMesh(ncell);
+    exciton.initializeHamiltonian();
+    exciton.BShamiltonian();
+    auto results = exciton.diagonalize("diag", nstates);
+
+    auto energies = xatu::detectDegeneracies(results->eigval, nstates, 6);
+    
+    std::vector<std::vector<double>> expectedEnergies = {{6.428535, 1}, 
+                                                         {6.456359, 1},
+                                                         {6.731320, 1}};
+
+    for(uint i = 0; i < energies.size(); i++){
+        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
+        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+    }
+
+    std::cout.clear();
+    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
+}
+
+TEST_CASE("TB hBN absorption - anisotropic", "[tb-hBN-kubo-ani]"){
+
+    std::cout.clear();
+    std::cout << std::setw(40) << std::left << "Testing TB hBN anisotropic conductivity... ";
+    std::cout.setstate(std::ios_base::failbit);
+
+    int ncell = 20;
+    int nstates = 2;
+
+    std::string modelfile = "../examples/material_models/hBN.model";    
+    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+
+    xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10, 25, 35});
+
+    exciton.brillouinZoneMesh(ncell);
+    exciton.initializeHamiltonian();
+    exciton.BShamiltonian();
+    auto results = exciton.diagonalize("diag", nstates);
+
+    arma::cx_mat vme_ex = results->excitonOscillatorStrength();
+    arma::mat norm_vme_ex = arma::square(arma::abs(vme_ex));
+    double cum_norm_vme_ex = arma::accu(norm_vme_ex);
+
+    double expectedTotalOscillator = 47.4140063784;
+    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-7));
+
+    std::cout.clear();
+    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("MoS2 energies", "[MoS2-energies]"){

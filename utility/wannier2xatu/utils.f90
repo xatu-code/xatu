@@ -56,8 +56,10 @@ module utils
                     enddo
                 end if
                 
-                ! Last line of degenerecences
-                read(fp, *) Degen((i - 1)*15 + 1:(i - 1)*15 + MOD(nFock, 15))  
+                ! Read the last partial line only if needed
+                if (MOD(nFock, 15) .ne. 0) then
+                    read(fp, *) Degen((nFock - MOD(nFock, 15) + 1):nFock)
+                endif 
                 read(fp, *)
                 
                 ! begin hamiltonian read

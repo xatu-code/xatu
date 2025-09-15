@@ -31,7 +31,6 @@ allocatable wp(:)
 allocatable skubo_ex_int(:,:,:)
 allocatable sigma_w_ex(:,:,:)
 
-
 complex*16 hhop
 complex*16 fk_ex
 complex*16 eigvec_stack
@@ -45,6 +44,10 @@ complex*16 sigma_w_ex
 character(100) type_broad
 character(100) file_name_sp
 character(100) file_name_ex
+character(100) file_name_sp_imag
+character(100) file_name_ex_imag
+character(len=:), allocatable :: file_name_strength
+integer :: p_dot
 
 
 pi=acos(-1.0d0)
@@ -123,8 +126,8 @@ end do
 
 
 !excitons
-do ialpha=1,2
-  do ialphap=1,2
+do ialpha=1,3
+  do ialphap=1,3
     call broad_vector(type_broad,norb_ex_cut,e_ex,skubo_ex_int(ialpha,ialphap,:), &
     nw,wp,sigma_w_ex(ialpha,ialphap,:),eta)
   end do
@@ -157,17 +160,74 @@ do iw=1,nw
               realpart(feps*sigma_w_ex(3,3,iw))
 end do
 
-!write exciton oscillator strengths
-norb_ex_cut=nv_ex*nc_ex*npointstotal
-write(60,*) '' ! Empty line
-do iex=1,norb_ex_cut
-  write(60,*) e_ex(iex)*27.211385d0,realpart(vme_ex(1,iex,1)), imagpart(vme_ex(1,iex,1)), &
-              realpart(vme_ex(2,iex,1)), imagpart(vme_ex(2,iex,1)), &
-              realpart(vme_ex(3,iex,1)), imagpart(vme_ex(2,iex,1))
+close(50)
+close(60)
+
+p_dot = scan(file_name_ex, '.', .true.)           ! find first “.” from the right
+if (p_dot == 0) then
+  ! no “.” found, just append
+  file_name_sp_imag = trim(file_name_sp)//'_imag'
+  file_name_ex_imag = trim(file_name_ex)//'_imag'
+else
+  ! insert '_strength' before the dot
+  file_name_sp_imag = file_name_sp(:p_dot-1)//'_imag'//file_name_sp(p_dot:)
+  file_name_ex_imag = file_name_ex(:p_dot-1)//'_imag'//file_name_ex(p_dot:)
+endif
+
+!write imaginary part of frequency dependent conductivity   
+open(50,file=file_name_sp_imag) 
+open(60,file=file_name_ex_imag) 
+do iw=1,nw
+  feps=1.0d0
+  !feps=4.0d0*pi*1.0d0/137.035999084d0*100.0d0   !absorbance units
+  !eps=4.0d0   !\sigma_0 units
+  write(50,*) wp(iw)*27.211385d0,-imagpart(feps*sigma_w_sp(1,1,iw)), &
+              -imagpart(feps*sigma_w_sp(1,2,iw)), &
+              -imagpart(feps*sigma_w_sp(1,3,iw)), &
+              -imagpart(feps*sigma_w_sp(2,1,iw)), &
+              -imagpart(feps*sigma_w_sp(2,2,iw)), &
+              -imagpart(feps*sigma_w_sp(2,3,iw)), &
+              -imagpart(feps*sigma_w_sp(3,1,iw)), &
+              -imagpart(feps*sigma_w_sp(3,2,iw)), &
+              -imagpart(feps*sigma_w_sp(3,3,iw))                
+  write(60,*) wp(iw)*27.211385d0,imagpart(feps*sigma_w_ex(1,1,iw)), &
+              imagpart(feps*sigma_w_ex(1,2,iw)), &
+              imagpart(feps*sigma_w_ex(1,3,iw)), &
+              imagpart(feps*sigma_w_ex(2,1,iw)), &
+              imagpart(feps*sigma_w_ex(2,2,iw)), &
+              imagpart(feps*sigma_w_ex(2,3,iw)), &
+              imagpart(feps*sigma_w_ex(3,1,iw)), &
+              imagpart(feps*sigma_w_ex(3,2,iw)), &  
+              imagpart(feps*sigma_w_ex(3,3,iw))
 end do
 
 close(50)
 close(60)
+
+! Oscillator stregth: append name to exciton spectra
+! assume file_name_ex has been set, e.g. 'some_file.dat'
+p_dot = scan(file_name_ex, '.', .true.)           ! find first “.” from the right
+if (p_dot == 0) then
+  ! no “.” found, just append
+  file_name_strength = trim(file_name_ex)//'_osc'
+else
+  ! insert '_strength' before the dot
+  file_name_strength = file_name_ex(:p_dot-1)//'_osc'//file_name_ex(p_dot:)
+endif
+
+! write exciton oscillator strengths to a separate file
+open(unit=70, file=file_name_strength)
+
+norb_ex_cut = nv_ex*nc_ex*npointstotal
+do iex=1,norb_ex_cut
+  write(70,*) e_ex(iex)*27.211385d0, &
+               realpart(vme_ex(1,iex,1)), imagpart(vme_ex(1,iex,1)), &
+               realpart(vme_ex(2,iex,1)), imagpart(vme_ex(2,iex,1)), &
+               realpart(vme_ex(3,iex,1)), imagpart(vme_ex(3,iex,1))
+end do
+
+close(70)
+
 
 return
 end
@@ -272,9 +332,6 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
 
   vme_ex=0.0d0
   
-  !getting some SP variables
-  call hoppings_observables_TB(norb,nR,Rvec,shop,hhop,rhop,sderhop,hderhop)
-  !11/05/2023 JJEP: fill rhop here. Easier to extend to DFT later 
 
   rhop=0.0d0
   do i = 1, nR
@@ -287,6 +344,10 @@ subroutine exciton_oscillator_strength(nR,norb,norb_ex,nv_ex,nc_ex,nv,Rvec,R,B,h
         end do
       end do
     end do
+
+  !getting some SP variables
+  call hoppings_observables_TB(norb,nR,Rvec,shop,hhop,rhop,sderhop,hderhop)
+  !11/05/2023 JJEP: fill rhop here. Easier to extend to DFT later 
 
   !Brillouin zone sampling	  
   !!$OMP PARALLEL DO PRIVATE(rkxp,rkyp,rkzp), &
@@ -415,7 +476,7 @@ subroutine hoppings_observables_TB(norb,nR,Rvec,shop,hhop, &
 rhop,sderhop,hderhop)
 
 implicit real*8 (a-h,o-z)
-dimension Rvec(nR,3),rhop(3,nR,norb,norb)
+dimension Rvec(nR,3), rhop(3,nR,norb,norb)
 dimension shop(norb,norb,nR),hhop(norb,norb,nR)
 dimension sderhop(3,nR,norb,norb),hderhop(3,nR,norb,norb)
 
@@ -429,15 +490,23 @@ do iR=1,nR
   do ialphap=1,ialpha
     Rx=Rvec(iR,1)
     Ry=Rvec(iR,2)
-    Rz=0.0d0
+
+    ! Check if the z direction is defined (thus periodic)
+    if (Rvec(iR,3) /= 0) then
+      Rz = Rvec(iR,3)
+    else 
+      Rz = rhop(3, iR, ialpha,ialphap) ! Quintela et. al. (2023) DOI: 10.1103/PhysRevB.107.235416
+    end if
+
 
     hderhop(1,iR,ialpha,ialphap)=complex(0.0d0,Rx)*hhop(ialpha,ialphap,iR)
     hderhop(2,iR,ialpha,ialphap)=complex(0.0d0,Ry)*hhop(ialpha,ialphap,iR)
-    hderhop(3,iR,ialpha,ialphap)=0.0d0
+    hderhop(3,iR,ialpha,ialphap)=complex(0.0d0,Rz)*hhop(ialpha,ialphap,iR)
   
     sderhop(1,iR,ialpha,ialphap)=complex(0.0d0,Rx)*shop(ialpha,ialphap,iR)
     sderhop(2,iR,ialpha,ialphap)=complex(0.0d0,Ry)*shop(ialpha,ialphap,iR)
-    sderhop(3,iR,ialpha,ialphap)=0.0d0
+    sderhop(3,iR,ialpha,ialphap)=complex(0.0d0,Rz)*shop(ialpha,ialphap,iR)
+
 
   end do
   end do
@@ -484,31 +553,37 @@ sderkernel=0.0d0
 akernel=0.0d0
 pgaugekernel=0.0d0
 do ialpha=1,norb
-do ialphap=1,ialpha   
+  do ialphap=1,ialpha   
 
-  do iRp=1,nR
-    Rx=Rvec(iRp,1)
-    Ry=Rvec(iRp,2)
-    Rz=0.0d0
-    phase=complex(0.0d0,rkx*Rx+rky*Ry+rkz*Rz)
-    factor=exp(phase)     
-              
-    hkernel(ialpha,ialphap)=hkernel(ialpha,ialphap)+ &
-    factor*hhop(ialpha,ialphap,iRp)                
-    skernel(ialpha,ialphap)=skernel(ialpha,ialphap)+ &
-    factor*shop(ialpha,ialphap,iRp)   
-              
-    do nj=1,3 
-      sderkernel(nj,ialpha,ialphap)=sderkernel(nj,ialpha,ialphap)+ &
-      factor*sderhop(nj,iRp,ialpha,ialphap)
-  
-      hderkernel(nj,ialpha,ialphap)=hderkernel(nj,ialpha,ialphap)+ &
-      factor*hderhop(nj,iRp,ialpha,ialphap) 
+    do iRp=1,nR
+      Rx=Rvec(iRp,1)
+      Ry=Rvec(iRp,2)
 
-      akernel(nj,ialpha,ialphap)=akernel(nj,ialpha,ialphap)+ &
-      factor*(rhop(nj,iRp,ialpha,ialphap)+ &
-      complex(0.0d0,1.0d0)*sderhop(nj,iRp,ialpha,ialphap))            
-    end do  
+      if (Rvec(iRp, 3) /= 0) then
+        Rz=Rvec(iRp,3)
+      else
+        Rz=0.0d0
+      end if
+
+      phase=complex(0.0d0,rkx*Rx+rky*Ry+rkz*Rz)
+      factor=exp(phase)     
+                
+      hkernel(ialpha,ialphap)=hkernel(ialpha,ialphap)+ &
+      factor*hhop(ialpha,ialphap,iRp)                
+      skernel(ialpha,ialphap)=skernel(ialpha,ialphap)+ &
+      factor*shop(ialpha,ialphap,iRp)
+                
+      do nj=1,3 
+        sderkernel(nj,ialpha,ialphap)=sderkernel(nj,ialpha,ialphap)+ &
+        factor*sderhop(nj,iRp,ialpha,ialphap)
+    
+        hderkernel(nj,ialpha,ialphap)=hderkernel(nj,ialpha,ialphap)+ &
+        factor*hderhop(nj,iRp,ialpha,ialphap) 
+
+        akernel(nj,ialpha,ialphap)=akernel(nj,ialpha,ialphap)+ &
+        factor*(rhop(nj,iRp,ialpha,ialphap)+ &
+        complex(0.0d0,1.0d0)*sderhop(nj,iRp,ialpha,ialphap))            
+      end do  
   end do
     
   do nj=1,3
@@ -603,8 +678,13 @@ do nnp=1,nn
       pgauge(nj,nn,nnp)=pgauge(nj,nn,nnp)+ &
       conjg(amu)*amup*pgaugekernel(nj,ialpha,ialphap)
 
-      vjseudoa(nj,nn,nnp)=vjseudoa(nj,nn,nnp)+ &
-      conjg(amu)*amup*hderkernel(nj,ialpha,ialphap)
+      if (nj == 3) then
+        vjseudoa(nj,nn,nnp)=vjseudoa(nj,nn,nnp)+ &
+        conjg(amu)*amup*hderkernel(nj,ialpha,ialphap)*(e(nnp)-e(nn))
+      else
+        vjseudoa(nj,nn,nnp)=vjseudoa(nj,nn,nnp)+ &
+        conjg(amu)*amup*hderkernel(nj,ialpha,ialphap)
+      end if
         
       vjseudob(nj,nn,nnp)=vjseudob(nj,nn,nnp)+conjg(amu)*amup* &
       (e(nn)*akernel(nj,ialpha,ialphap)-e(nnp)*conjg(akernel(nj,ialphap,ialpha)))* &
@@ -666,11 +746,11 @@ do iw=1,nw
         factor1=(fnn-fnnp)/(e(nn)-e(nnp))
       end if
 	  !lorentzian
-      !delta_nnp=1.0d0/pi*aimag(1.0d0/(wp(iw)-e(nn)+e(nnp)-complex(0.0d0,eta)))
+      delta_nnp=1.0d0/pi*aimag(1.0d0/(wp(iw)-e(nn)+e(nnp)-complex(0.0d0,eta)))
 	  !exponential
-    delta_nnp=1.0d0/eta*1.0d0/sqrt(2.0d0*pi)*exp(-0.5d0/(eta**2)*(wp(iw)-e(nn)+e(nnp))**2)
+    ! delta_nnp=1.0d0/eta*1.0d0/sqrt(2.0d0*pi)*exp(-0.5d0/(eta**2)*(wp(iw)-e(nn)+e(nnp))**2)
 	  
-          !save oscillator stregths
+      !save oscillator stregths
       do nj=1,3
         do njp=1,3
           skubo=vme(nj,nn,nnp)*vme(njp,nnp,nn)
@@ -693,14 +773,15 @@ subroutine broad_vector(type_broad,n,wn,fn,nw,wp,fw_c,eta)
 implicit real*8 (a-h,o-z)
 
 dimension wn(n),fn(n),fn_real(n),wp(nw),fw_c(nw)
-complex*16 fw_c,fn
+complex*16 fw_c,fn, rbroad
 character(100) type_broad
 pi=acos(-1.0d0)
 !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 !wp=0.0d0
 fw_c=0.0d0
 do i=1,n
-fn_real(i)=realpart(fn(i))
+  ! fn_real(i)=realpart(fn(i))
+  fn_real(i) = fn(i)
 end do
 
 do i=1,nw
@@ -708,7 +789,7 @@ do i=1,nw
 do inn=1,n
   rbroad=1.0d0
   if (type_broad.eq.'lorentzian') then
-    rbroad=1.0d0/pi*aimag(1.0d0/(wp(i)-wn(inn)-complex(0.0d0,1.0d0)*eta))
+    rbroad=1.0d0/pi * (1.0d0/(wp(i)-wn(inn)-complex(0.0d0,1.0d0)*eta))
   end if
   if (type_broad.eq.'gaussian') then
     rbroad=1.0d0/eta*1.0d0/sqrt(2.0d0*pi)*exp(-0.5d0/(eta**2)*(wp(i)-wn(inn))**2)

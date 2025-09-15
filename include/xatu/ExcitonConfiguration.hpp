@@ -32,6 +32,10 @@ class ExcitonConfiguration : public ConfigurationBase{
         arma::vec eps = {};
         // Screening length
         double r0;
+        // Screening length
+        double ry;
+        // Screening length
+        double rz;
         // Thickness of layer
         double d;
         // Calculation mode (either 'realspace' or 'reciprocalspace')

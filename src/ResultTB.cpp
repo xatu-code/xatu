@@ -19,6 +19,10 @@ ResultTB::ResultTB(ExcitonTB* exciton_, arma::vec& eigval_, arma::cx_mat& eigvec
  * @return Vector with the total spin of the exciton, the spin of the hole and that of the electron
  */
 arma::cx_vec ResultTB::spinX(const arma::cx_vec& coefs){
+
+    if (system->basisdim % 2 != 0){
+        throw std::invalid_argument("Error: System basis must include spin.");
+    }
     
     // Initialize Sz for both electron and hole to zero
     arma::cx_double electronSpin = 0;
@@ -27,16 +31,7 @@ arma::cx_vec ResultTB::spinX(const arma::cx_vec& coefs){
     int dimX = exciton->basisStates.n_rows;
 
     arma::cx_vec spinEigvalues = {1./2, -1./2};
-    arma::cx_vec spinVector = arma::zeros<arma::cx_vec>(system->basisdim);
-    int vecIterator = 0;
-    for(int atomIndex = 0; atomIndex < system->natoms; atomIndex++){
-        int species = system->motif.row(atomIndex)(3);
-        int norbitals = system->orbitals(species);
-        spinVector.subvec(vecIterator, vecIterator + norbitals - 1) = 
-                          arma::kron(arma::ones(norbitals/2), spinEigvalues);
-        vecIterator += system->orbitals(species);
-    }
-    
+    arma::cx_vec spinVector = arma::kron(arma::ones(system->basisdim/2), spinEigvalues);    
 	arma::cx_vec eigvec, spinEigvec;
 
     // Initialize hole spin and electron spin operators

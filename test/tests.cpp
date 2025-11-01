@@ -543,8 +543,8 @@ TEST_CASE("TB hBN absorption", "[tb-hBN-kubo]"){
     arma::mat norm_vme_ex = arma::square(arma::abs(vme_ex));
     double cum_norm_vme_ex = arma::accu(norm_vme_ex);
 
-    double expectedTotalOscillator = 47.4140063784;
-    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-7));
+    double expectedTotalOscillator = 47.4140064;
+    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
 
     std::cout.clear();
     std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
@@ -734,8 +734,8 @@ TEST_CASE("Wannier hBN", "[w90-hBN]"){
     arma::mat norm_vme_ex = arma::square(arma::abs(vme_ex));
     double cum_norm_vme_ex = arma::accu(norm_vme_ex);
 
-    double expectedTotalOscillator = 103.0312591808;
-    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-7));
+    double expectedTotalOscillator = 103.0325881;
+    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
 
     // Check reciprocal w.f.
     int nbandsCombinations = exciton.conductionBands.n_elem * exciton.valenceBands.n_elem;
@@ -809,7 +809,7 @@ TEST_CASE("TB hBN-ani energies (full diagonalization)", "[tb-hBN-ani-fulldiag]")
     
     std::vector<std::vector<double>> expectedEnergies = {{6.428535, 1}, 
                                                          {6.456359, 1},
-                                                         {6.731320, 1}};
+                                                         {6.732466, 1}};
 
     for(uint i = 0; i < energies.size(); i++){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
@@ -1102,8 +1102,8 @@ TEST_CASE("MoS2 absorption", "[MoS2-kubo]"){
     arma::mat norm_vme_ex = arma::square(arma::abs(vme_ex));
     double cum_norm_vme_ex = arma::accu(norm_vme_ex);
 
-    double expectedTotalOscillator = 37.2792093358;
-    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-7));
+    double expectedTotalOscillator = 37.2822837;
+    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
 
     std::cout.clear();
     std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;

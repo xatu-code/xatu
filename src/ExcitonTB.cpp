@@ -399,7 +399,6 @@ double ExcitonTB::keldysh(arma::rowvec r){
     if(r_norm < 1E-10){
         STVH0(regularization/r0, &SH0);
         potential_value = ec/(8E-10*eps0*eps_bar*r0avg)*(SH0 - y0(regularization/r0avg));
-        // potential_value = ec/(8E-10*eps0*eps_bar*r0norm)*(SH0 - y0(regularization/r0norm));
     }
     else if (r_norm > cutoff){
         potential_value = 0.0;
@@ -407,7 +406,6 @@ double ExcitonTB::keldysh(arma::rowvec r){
     else{
         STVH0(R, &SH0);
         potential_value = ec/(8E-10*eps0*eps_bar*r0avg)*(SH0 - y0(R));
-        // potential_value = ec/(8E-10*eps0*eps_bar*r0norm)*(SH0 - y0(R));
     };
 
     return potential_value;

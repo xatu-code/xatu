@@ -18,11 +18,11 @@
 
 TEST_CASE("Modelfile parsing", "[model_parsing]"){
 
-    std::cout << std::setw(40) << std::left << "Testing model file parsing... ";
+    std::cout << std::setw(50) << std::left << "Testing model file parsing... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
     
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     int expectedFilling = 1;
     int expectedDim = 2;
@@ -55,19 +55,16 @@ TEST_CASE("Modelfile parsing", "[model_parsing]"){
         double hash = xatu::array2hash(config.systemInfo.hamiltonian.slice(i));
         REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedHamiltionianHash(i), 1E-4));
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("CRYSTAL file parsing", "[CRYSTAL_parsing]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing CRYSTAL file parsing... ";
+    std::cout << std::setw(50) << std::left << "Testing CRYSTAL file parsing... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     std::string modelfile = "../examples/material_models/DFT/hBN_base_HSE06.outp";
-    xatu::CRYSTALConfiguration config = xatu::CRYSTALConfiguration(modelfile);
+    xatu::CRYSTALConfiguration config(modelfile);
 
     int expectedFilling = 6;
     int expectedDim = 2;
@@ -117,20 +114,17 @@ TEST_CASE("CRYSTAL file parsing", "[CRYSTAL_parsing]"){
         double hash = xatu::array2hash(config.systemInfo.overlap.slice(i));
         REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedOverlapHash(i), 1E-2));
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("Wannier90 file parsing", "[wannier_parsing]") {
     // Suppress output during test
-    std::cout << std::setw(40) << std::left << "Testing Wannier90 file parsing... ";
+    std::cout << std::setw(50) << std::left << "Testing Wannier90 file parsing... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     // Load Wannier90 file
     std::string modelfile = "../examples/material_models/wannier/hBN_tb.dat";
     std::cout << "got file: " << modelfile << std::endl;
-    xatu::Wannier90Configuration config = xatu::Wannier90Configuration(modelfile, 4);
+    xatu::Wannier90Configuration config(modelfile, 4);
 
     int expectedDim = 2;                         // Dimension of the system
     int expectedFilling = 4;                     // Number of filled states
@@ -243,20 +237,16 @@ TEST_CASE("Wannier90 file parsing", "[wannier_parsing]") {
             hashIndex++;
         }
     }
-
-    // Restore output
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("Exciton file parsing", "[excitonfile_parsing]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing exciton file parsing... ";
+    std::cout << std::setw(50) << std::left << "Testing exciton file parsing... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     std::string excitonconfig = "./data/hBN_spinless.txt";
-    xatu::ExcitonConfiguration config = xatu::ExcitonConfiguration(excitonconfig);
+    xatu::ExcitonConfiguration config(excitonconfig);
 
     std::string expectedName = "hBN_N30";
     int expectedNcell = 30;
@@ -269,19 +259,16 @@ TEST_CASE("Exciton file parsing", "[excitonfile_parsing]"){
         REQUIRE(config.excitonInfo.eps(i) == expectedDielectric(i));
     }
     REQUIRE(xatu::array2hash(config.excitonInfo.Q) == 0);
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("Exciton file parsing - anisotropic", "[excitonfile_parsing_anisotropic]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing anisotropic exciton file parsing... ";
+    std::cout << std::setw(50) << std::left << "Testing anisotropic exciton file parsing... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     std::string excitonconfig = "./data/hBN_anisotropic.txt";
-    xatu::ExcitonConfiguration config = xatu::ExcitonConfiguration(excitonconfig);
+    xatu::ExcitonConfiguration config(excitonconfig);
 
     std::string expectedName = "hBN_ani";
     int expectedNcell = 30;
@@ -295,21 +282,19 @@ TEST_CASE("Exciton file parsing - anisotropic", "[excitonfile_parsing_anisotropi
     }
     REQUIRE(xatu::array2hash(config.excitonInfo.Q) == 0);
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
     
 TEST_CASE("TB hBN energies (full diagonalization)", "[tb-hBN-fulldiag]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN energies (fulldiag)... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN energies (fulldiag)... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
     int nstates = 3;
 
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10});
 
@@ -326,22 +311,19 @@ TEST_CASE("TB hBN energies (full diagonalization)", "[tb-hBN-fulldiag]"){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("TB hBN energies (davidson)", "[tb-hBN-davidson]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN energies (Davidson)... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN energies (Davidson)... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
     int nstates = 3;
 
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10});
 
@@ -358,22 +340,19 @@ TEST_CASE("TB hBN energies (davidson)", "[tb-hBN-davidson]"){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("TB hBN energies (Lanczos)", "[hBN-lanczos]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN energies (Lanczos)... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN energies (Lanczos)... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
     int nstates = 3;
 
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10});
 
@@ -390,22 +369,19 @@ TEST_CASE("TB hBN energies (Lanczos)", "[hBN-lanczos]"){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("TB hBN energies (reciprocal)", "[tb-hBN-reciprocal]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN energies (reciprocal)... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN energies (reciprocal)... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
     int nstates = 3;
 
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10});
     exciton.setMode("reciprocalspace");
@@ -425,22 +401,19 @@ TEST_CASE("TB hBN energies (reciprocal)", "[tb-hBN-reciprocal]"){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("TB hBN reciprocal w.f.", "[tb-hBN-kwf]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN reciprocal w.f... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN reciprocal w.f... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
     int nstates = 2;
 
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10});
 
@@ -468,14 +441,12 @@ TEST_CASE("TB hBN reciprocal w.f.", "[tb-hBN-kwf]"){
     double expectedKwfHash = 1.086145105;
     REQUIRE_THAT(kwfHash, Catch::Matchers::WithinAbs(expectedKwfHash, 1E-5));
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("TB hBN real-space w.f.", "[tb-hBN-rswf]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN real-space w.f... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN real-space w.f... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
@@ -484,7 +455,7 @@ TEST_CASE("TB hBN real-space w.f.", "[tb-hBN-rswf]"){
     arma::rowvec holeCell = {0, 0, 0};
 
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10});
 
@@ -516,21 +487,19 @@ TEST_CASE("TB hBN real-space w.f.", "[tb-hBN-rswf]"){
     double expectedRSwfHash = 3.4185866144;
     REQUIRE_THAT(rswfHash, Catch::Matchers::WithinAbs(expectedRSwfHash, 1E-5));
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("TB hBN absorption", "[tb-hBN-kubo]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN conductivity... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN conductivity... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
     int nstates = 2;
 
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10});
 
@@ -546,21 +515,19 @@ TEST_CASE("TB hBN absorption", "[tb-hBN-kubo]"){
     double expectedTotalOscillator = 47.4140064;
     REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("TB hBN energies (spinful)", "[tb-hBN-spinful]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN spinful... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN spinful... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
     int nstates = 12;
 
     std::string modelfile = "../examples/material_models/hBN_spinful.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 2, 0, {1, 1, 10});
 
@@ -577,22 +544,19 @@ TEST_CASE("TB hBN energies (spinful)", "[tb-hBN-spinful]"){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
     
 TEST_CASE("TB hBN spin", "[tb-hBN-spin]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN spin... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN spin... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 16;
     int nstates = 4;
 
     std::string modelfile = "../examples/material_models/hBN_spinful.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 2, 0, {1, 1, 10});
     
@@ -611,14 +575,12 @@ TEST_CASE("TB hBN spin", "[tb-hBN-spin]"){
         REQUIRE_THAT(std::abs(spin(2)), Catch::Matchers::WithinAbs(0.5, 1E-2));
     }
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("DFT hBN", "[dft-hBN]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing DFT hBN... ";
+    std::cout << std::setw(50) << std::left << "Testing DFT hBN... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
@@ -628,7 +590,7 @@ TEST_CASE("DFT hBN", "[dft-hBN]"){
     arma::rowvec holeCell = {0, 0, 0};
 
     std::string modelfile = "../examples/material_models/DFT/hBN_base_HSE06.outp";
-    xatu::CRYSTALConfiguration config = xatu::CRYSTALConfiguration(modelfile, 100);
+    xatu::CRYSTALConfiguration config(modelfile, 100);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10});
     exciton.system->setAU(true);
@@ -692,14 +654,12 @@ TEST_CASE("DFT hBN", "[dft-hBN]"){
     double expectedRSwfHash = 83.2242560463;
     REQUIRE_THAT(rswfHash, Catch::Matchers::WithinAbs(expectedRSwfHash, 1E-5));
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("Wannier hBN", "[w90-hBN]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing Wannierized hBN... ";
+    std::cout << std::setw(50) << std::left << "Testing Wannierized hBN... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 30;
@@ -709,7 +669,7 @@ TEST_CASE("Wannier hBN", "[w90-hBN]"){
     arma::rowvec holeCell = {0, 0, 0};
 
     std::string modelfile = "../examples/material_models/wannier/hBN_tb.dat";
-    xatu::Wannier90Configuration config = xatu::Wannier90Configuration(modelfile, 4);
+    xatu::Wannier90Configuration config(modelfile, 4);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10});
     exciton.system->setAU(true);
@@ -782,21 +742,19 @@ TEST_CASE("Wannier hBN", "[w90-hBN]"){
     double expectedRSwfHash = 1.003540;
     REQUIRE_THAT(rswfHash, Catch::Matchers::WithinAbs(expectedRSwfHash, 1E-5));
 
-    std::cout.clear();
-    std::cout << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("TB hBN-ani energies (full diagonalization)", "[tb-hBN-ani-fulldiag]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN-ani energies (fulldiag)... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN-ani energies (fulldiag)... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
     int nstates = 3;
 
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10, 25, 35});
 
@@ -815,22 +773,19 @@ TEST_CASE("TB hBN-ani energies (full diagonalization)", "[tb-hBN-ani-fulldiag]")
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("TB hBN absorption - anisotropic", "[tb-hBN-kubo-ani]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing TB hBN anisotropic conductivity... ";
+    std::cout << std::setw(50) << std::left << "Testing TB hBN anisotropic conductivity... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 20;
     int nstates = 2;
 
     std::string modelfile = "../examples/material_models/hBN.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 1, 0, {1, 1, 10, 25, 35});
 
@@ -846,21 +801,19 @@ TEST_CASE("TB hBN absorption - anisotropic", "[tb-hBN-kubo-ani]"){
     double expectedTotalOscillator = 47.4140063784;
     REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-7));
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("MoS2 energies", "[MoS2-energies]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing MoS2 energies... ";
+    std::cout << std::setw(50) << std::left << "Testing MoS2 energies... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 12;
     int nstates = 2;
 
     std::string modelfile = "../examples/material_models/MoS2.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 2, 0, {1., 4., 13.55});
 
@@ -877,22 +830,19 @@ TEST_CASE("MoS2 energies", "[MoS2-energies]"){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("MoS2 reciprocal w.f.", "[MoS2-kwf]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing MoS2 reciprocal w.f... ";
+    std::cout << std::setw(50) << std::left << "Testing MoS2 reciprocal w.f... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 12;
     int nstates = 2;
 
     std::string modelfile = "../examples/material_models/MoS2.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 2, 0, {1., 4., 13.55});
 
@@ -920,14 +870,12 @@ TEST_CASE("MoS2 reciprocal w.f.", "[MoS2-kwf]"){
     double expectedKwfHash = 1.1814790902;
     REQUIRE_THAT(kwfHash, Catch::Matchers::WithinAbs(expectedKwfHash, 1E-5));
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("MoS2 spin", "[MoS2-spin]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing MoS2 spin... ";
+    std::cout << std::setw(50) << std::left << "Testing MoS2 spin... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 12;
@@ -935,7 +883,7 @@ TEST_CASE("MoS2 spin", "[MoS2-spin]"){
     int factor = 2;
 
     std::string modelfile = "../examples/material_models/MoS2.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 2, 0, {1., 4., 13.55});
 
@@ -959,21 +907,19 @@ TEST_CASE("MoS2 spin", "[MoS2-spin]"){
         }
     }
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("MoS2 exciton bands", "[MoS2-Q]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing MoS2 exciton bands... ";
+    std::cout << std::setw(50) << std::left << "Testing MoS2 exciton bands... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 12;
     int nstates = 2;
 
     std::string modelfile = "../examples/material_models/MoS2.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
     
     arma::vec Q_values = {-0.1, -0.05, 0.0, 0.05, 0.1};
     arma::rowvec Q = {0., 0., 0.};
@@ -1002,15 +948,12 @@ TEST_CASE("MoS2 exciton bands", "[MoS2-Q]"){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-5));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("MoS2 exchange", "[MoS2-exchange]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing MoS2 with exchange... ";
+    std::cout << std::setw(50) << std::left << "Testing MoS2 with exchange... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 12;
@@ -1018,7 +961,7 @@ TEST_CASE("MoS2 exchange", "[MoS2-exchange]"){
     arma::rowvec Q = {0., 0.1, 0.};
 
     std::string modelfile = "../examples/material_models/MoS2.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 2, 0, {1., 4., 13.55}, Q);
     exciton.setExchange(true);
@@ -1037,15 +980,12 @@ TEST_CASE("MoS2 exchange", "[MoS2-exchange]"){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-5));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("MoS2 reduced BZ", "[MoS2-reducedBZ]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing MoS2 with reduced BZ... ";
+    std::cout << std::setw(50) << std::left << "Testing MoS2 with reduced BZ... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 12;
@@ -1053,7 +993,7 @@ TEST_CASE("MoS2 reduced BZ", "[MoS2-reducedBZ]"){
     int factor = 2;
 
     std::string modelfile = "../examples/material_models/MoS2.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 2, 0, {1., 4., 13.55});
 
@@ -1074,22 +1014,19 @@ TEST_CASE("MoS2 reduced BZ", "[MoS2-reducedBZ]"){
         REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
         REQUIRE(energies[i][1] == expectedEnergies[i][1]);
     }
-
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 
 TEST_CASE("MoS2 absorption", "[MoS2-kubo]"){
 
     std::cout.clear();
-    std::cout << std::setw(40) << std::left << "Testing MoS2 conductivity... ";
+    std::cout << std::setw(50) << std::left << "Testing MoS2 conductivity... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
 
     int ncell = 12;
     int nstates = 2;
 
     std::string modelfile = "../examples/material_models/MoS2.model";    
-    xatu::SystemConfiguration config = xatu::SystemConfiguration(modelfile);
+    xatu::SystemConfiguration config(modelfile);
 
     xatu::ExcitonTB exciton = xatu::ExcitonTB(config, ncell, 2, 0, {1., 4., 13.55});
 
@@ -1105,7 +1042,5 @@ TEST_CASE("MoS2 absorption", "[MoS2-kubo]"){
     double expectedTotalOscillator = 37.2822837;
     REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
 
-    std::cout.clear();
-    std::cout << std::setw(40) << "\033[1;32m Success \033[0m" << std::endl;
 }
 

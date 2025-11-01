@@ -18,7 +18,7 @@ extern "C" {
                   std::complex<double>* hhop, double* shop, int* nk, double* rkx, 
                   double* rky, double* rkz, std::complex<double>* fk_ex, double* e_ex, 
                   double* eigval_stack, std::complex<double>* eigvec_stack, std::complex<double>* vme,
-                  std::complex<double>* vme_ex, bool* convert_to_au);
+                  std::complex<double>* vme_ex, int* convert_to_au);
 }
 
 namespace xatu {

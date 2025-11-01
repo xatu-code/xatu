@@ -669,9 +669,9 @@ vjseudoa=0.0d0
 vjseudob=0.0d0
 pgauge=0.0d0
 
-!$OMP PARALLEL DO
+!$OMP PARALLEL DO &
+!$OMP& PRIVATE(nnp,ialpha,ialphap,nj,amu,amup)
 do nn=1,nbands
-
 do nnp=1,nn
   !momentums and A and B term
   do ialpha=1,norb

@@ -407,12 +407,17 @@ void Result<T>::writeEigenvalues(FILE* textfile, int n){
         throw std::invalid_argument("Optional argument n must be a positive integer equal or below basisdim");
     }
 
-    fprintf(textfile, "%d\t", exciton->excitonbasisdim);
-    int maxEigval = (n == 0) ? exciton->excitonbasisdim : n;  
-    for(unsigned int i = 0; i < maxEigval; i++){
-        fprintf(textfile, "%11.7lf\t", eigval(i));
+    // first line: number of cells
+    fprintf(textfile, "%d\n", exciton->excitonbasisdim);
+
+    // second line: how many eigenvalues will follow
+    int maxEigval = (n == 0) ? exciton->excitonbasisdim : n;
+    fprintf(textfile, "%d\n", maxEigval);
+
+    // then one eigenvalue per line
+    for(int i = 0; i < maxEigval; ++i){
+        fprintf(textfile, " %11.7lf\n", eigval(i));
     }
-    fprintf(textfile, "\n");
 }
 
 /**

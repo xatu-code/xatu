@@ -318,13 +318,14 @@ arma::cx_mat ResultTB::excitonOscillatorStrength(){
     arma::cx_cube vme_ex = arma::zeros<arma::cx_cube>(3, norb_ex, 2);
 
     std::complex<double>* vme = new std::complex<double>[3*nk*(nv + nc)*(nv + nc)];
-    bool convert_to_au = true;
+    int convert_to_au = 1;
 
     exciton_oscillator_strength_(&nR, &norb, &norb_ex, &nv, &nc, &filling, 
              Rvec.memptr(), R.memptr(), extendedMotifFull.memptr(), hhop.memptr(), shop.memptr(), &nk, rkx.memptr(),
              rky.memptr(), rkz.memptr(), m_eigvec.memptr(), m_eigval.memptr(), eigval_sp.memptr(), eigvec_sp.memptr(),
              vme, vme_ex.memptr(), &convert_to_au);
 
+    delete[] vme;
     return vme_ex.slice(0);
 }
 

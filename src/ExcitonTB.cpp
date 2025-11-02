@@ -228,7 +228,7 @@ ExcitonTB::ExcitonTB(std::shared_ptr<SystemTB> sys, int ncell, int nbands, int n
  * Exciton destructor.
  * @details Used mainly for debugging; the message should be removed at some point.
  */
-ExcitonTB::~ExcitonTB(){};
+// ExcitonTB::~ExcitonTB(){};
 
 
 /* ------------------------------ Setters ------------------------------ */

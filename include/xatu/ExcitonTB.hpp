@@ -91,7 +91,7 @@ class ExcitonTB : public Exciton<SystemTB> {
         ExcitonTB(std::shared_ptr<SystemTB>, int ncell = 20, const arma::ivec& bands = {0, 1}, 
                  const arma::rowvec& parameters = {1, 5, 1, 1, 1}, const arma::rowvec& Q = {0., 0., 0.});
 
-        ~ExcitonTB();
+        // ~ExcitonTB();
 
         // Setters
         void setParameters(const arma::rowvec&);

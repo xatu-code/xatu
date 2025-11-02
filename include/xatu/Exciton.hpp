@@ -91,7 +91,7 @@ class Exciton {
     public:
         // Constructor & Destructor
         Exciton(std::shared_ptr<T> sys_ptr) : system_(sys_ptr){};
-        virtual ~Exciton(){};
+        // virtual ~Exciton(){};
 
         // Setters
         void setUnitCells(int);

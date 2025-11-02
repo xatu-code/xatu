@@ -4,6 +4,14 @@ FC = gfortran
 CFLAGS = -O2 -Wall -lm
 FFLAGS = -O2 -Wall -Wno-tabs -lm
 
+TEST_FP_FLAGS = \
+    -fno-fast-math \
+    -fno-unsafe-math-optimizations \
+    -ffp-contract=off \
+    -frounding-math \
+    -fno-associative-math \
+    -fno-reciprocal-math
+
 # Include folders
 INCLUDE = -I$(PWD)/include
 
@@ -14,6 +22,10 @@ LIBS = -DARMA_DONT_USE_WRAPPER -L$(PWD) -lxatu -larmadillo -lopenblas -llapack -
 ifeq ($(DEBUG), 1)
 	CFLAGS = -Wall -lm -g
 	FFLAGS = -Wall -Wno-tabs -lm -g
+endif
+ifeq ($(TEST), 1)
+	CFLAGS = -Wall -lm $(TEST_FP_FLAGS)
+	FFLAGS = -Wall -Wno-tabs -lm $(TEST_FP_FLAGS)
 endif
 ifeq ($(HDF5), 1)
 	CFLAGS += -DARMA_USE_HDF5
@@ -49,4 +61,4 @@ build/%.o: src/%.f90
 	$(FC) -c $< -o $@ $(FFLAGS) $(LIBS) $(INCLUDE)
 
 clean:
-	rm -f build/*.o bin/* libxatu.a
+	rm -rf build/*.o bin/* libxatu.a

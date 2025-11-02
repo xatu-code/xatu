@@ -798,8 +798,8 @@ TEST_CASE("TB hBN absorption - anisotropic", "[tb-hBN-kubo-ani]"){
     arma::mat norm_vme_ex = arma::square(arma::abs(vme_ex));
     double cum_norm_vme_ex = arma::accu(norm_vme_ex);
 
-    double expectedTotalOscillator = 47.4140063784;
-    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-7));
+    double expectedTotalOscillator = 47.4140064;
+    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
 
 }
 

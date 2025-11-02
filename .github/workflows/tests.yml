@@ -1,0 +1,21 @@
+name: Xatu tests
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build Docker image
+        run: docker build -t xatu-tests .
+
+      - name: Run Catch2 tests
+        run: docker run --rm xatu-tests

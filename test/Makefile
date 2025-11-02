@@ -1,6 +1,14 @@
 # Compiler & compiler flags
 CC = g++
-CFLAGS = -O2 -Wall -lm
+CFLAGS = -Wall -lm
+
+TEST_FP_FLAGS = \
+    -fno-fast-math \
+    -fno-unsafe-math-optimizations \
+    -ffp-contract=off \
+    -frounding-math \
+    -fno-associative-math \
+    -fno-reciprocal-math
 
 ROOT_DIR := $(shell dirname $(PWD))
 
@@ -13,7 +21,7 @@ LIBS = -DARMA_DONT_USE_WRAPPER -L$(ROOT_DIR) -L$(ROOT_DIR)/test -lxatu -larmadil
 dummy_bin_folder := $(shell mkdir -p bin)
 
 tests: tests.cpp
-	$(CC) -o bin/$@.x $< $(CFLAGS) $(INCLUDE) $(LIBS)
+	$(CC) -o bin/$@.x $< $(CFLAGS) $(TEST_FP_FLAGS) $(INCLUDE) $(LIBS) 
 
 clean:
 	rm -f bin/*.x

@@ -17,7 +17,7 @@ jobs:
       - name: Build Docker image
         run: docker build -t xatu-tests .
 
-      - name: Run Catch2 tests
+      - name: Run tests
         run: |
           export OMP_NUM_THREADS=1
           export OPENBLAS_NUM_THREADS=1

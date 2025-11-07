@@ -19,6 +19,5 @@ RUN make tests
 
 ENV OMP_NUM_THREADS=1
 ENV OPENBLAS_NUM_THREADS=1
-ENV OPENBLAS_CORETYPE=generic
 
 CMD ["./bin/tests.x", "--gtest_color=yes"]

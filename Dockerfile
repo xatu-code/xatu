@@ -5,7 +5,8 @@ RUN apt-get update && apt-get install -y \
     liblapack-dev \
     libarmadillo-dev \
     libarpack2-dev \ 
-    gfortran && \
+    gfortran \
+    libgtest-dev && \
     rm -rf /var/lib/apt/lists/*
 
 WORKDIR /opt/xatu
@@ -16,4 +17,7 @@ RUN make build TEST=1
 WORKDIR /opt/xatu/test
 RUN make tests
 
-CMD ["./bin/tests.x"]
+ENV OMP_NUM_THREADS=1
+ENV OPENBLAS_NUM_THREADS=1
+
+CMD ["./bin/tests.x", "--gtest_color=yes"]

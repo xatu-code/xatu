@@ -1,5 +1,4 @@
-#define CATCH_CONFIG_MAIN
-
+#include <gtest/gtest.h>
 #include <iostream>
 #include <armadillo>
 #include <stdlib.h>
@@ -7,7 +6,6 @@
 #include <vector>
 
 #include <xatu.hpp>
-#include <catch.hpp>
 
 #ifndef constants
 #define PI 3.141592653589793
@@ -16,7 +14,7 @@
 #endif
 
 
-TEST_CASE("Modelfile parsing", "[model_parsing]"){
+TEST(FileParsing, ModelfileParsing){
 
     std::cout << std::setw(50) << std::left << "Testing model file parsing... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
@@ -33,31 +31,31 @@ TEST_CASE("Modelfile parsing", "[model_parsing]"){
     arma::vec expectedBravaisVectorsHash = {0, -0.110843, 2.38916, 2.05422, 4.55422};
     arma::vec expectedHamiltionianHash = {-1.34375, -0.9, -0.9, -0.0375, -0.0375};
     
-    REQUIRE(config.systemInfo.ndim == expectedDim);
-    REQUIRE(config.systemInfo.filling == expectedFilling);
+    EXPECT_EQ(config.systemInfo.ndim, expectedDim);
+    EXPECT_EQ(config.systemInfo.filling, expectedFilling);
     for(uint i = 0; i < config.systemInfo.norbitals.n_cols; i++){
-        REQUIRE(config.systemInfo.norbitals(i) == expectedOrbitals(i));
+        EXPECT_EQ(config.systemInfo.norbitals(i), expectedOrbitals(i));
     }
 
     for(uint i = 0; i < config.systemInfo.bravaisLattice.n_rows; i++){
         double hash = xatu::array2hash(config.systemInfo.bravaisLattice.row(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedBravaisLatticeHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedBravaisLatticeHash(i), 1E-4);
     }
     for(uint i = 0; i < config.systemInfo.motif.n_rows; i++){
         double hash = xatu::array2hash(config.systemInfo.motif.row(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedMotifHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedMotifHash(i), 1E-4);
     }
     for(uint i = 0; i < config.systemInfo.bravaisVectors.n_rows; i++){
         double hash = xatu::array2hash(config.systemInfo.bravaisVectors.row(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedBravaisVectorsHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedBravaisVectorsHash(i), 1E-4);
     }
     for(uint i = 0; i < config.systemInfo.hamiltonian.n_slices; i++){
         double hash = xatu::array2hash(config.systemInfo.hamiltonian.slice(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedHamiltionianHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedHamiltionianHash(i), 1E-4);
     }
 }
 
-TEST_CASE("CRYSTAL file parsing", "[CRYSTAL_parsing]"){
+TEST(FileParsing, CRYSTALfileParsing){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing CRYSTAL file parsing... " << std::endl;
@@ -86,37 +84,37 @@ TEST_CASE("CRYSTAL file parsing", "[CRYSTAL_parsing]"){
                                     0.0628083, 0.113745, 0.340853, 0.0733232, 0.0869901,
                                     0.0867042, 0.151335, 0.0713888, 0.0795013, 0.0507182};
     
-    REQUIRE(config.systemInfo.ndim == expectedDim);
-    REQUIRE(config.systemInfo.filling == expectedFilling);
-    REQUIRE(config.systemInfo.hamiltonian.n_slices == expectedFockMatricesNumber);
-    REQUIRE(config.systemInfo.overlap.n_slices == expectedFockMatricesNumber);
+    EXPECT_EQ(config.systemInfo.ndim, expectedDim);
+    EXPECT_EQ(config.systemInfo.filling, expectedFilling);
+    EXPECT_EQ(config.systemInfo.hamiltonian.n_slices, expectedFockMatricesNumber);
+    EXPECT_EQ(config.systemInfo.overlap.n_slices, expectedFockMatricesNumber);
     for(uint i = 0; i < config.systemInfo.norbitals.n_cols; i++){
-        REQUIRE(config.systemInfo.norbitals(i) == expectedOrbitals(i));
+        EXPECT_EQ(config.systemInfo.norbitals(i), expectedOrbitals(i));
     }
 
     for(uint i = 0; i < config.systemInfo.bravaisLattice.n_rows; i++){
         double hash = xatu::array2hash(config.systemInfo.bravaisLattice.row(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedBravaisLatticeHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedBravaisLatticeHash(i), 1E-4);
     }
     for(uint i = 0; i < config.systemInfo.motif.n_rows; i++){
         double hash = xatu::array2hash(config.systemInfo.motif.row(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedMotifHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedMotifHash(i), 1E-4);
     }
     for(uint i = 0; i < config.systemInfo.bravaisVectors.n_rows; i++){
         double hash = xatu::array2hash(config.systemInfo.bravaisVectors.row(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedBravaisVectorsHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedBravaisVectorsHash(i), 1E-4);
     }
     for(uint i = 0; i < config.systemInfo.hamiltonian.n_slices; i++){
         double hash = xatu::array2hash(config.systemInfo.hamiltonian.slice(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedHamiltionianHash(i), 1E-2));
+        EXPECT_NEAR(hash, expectedHamiltionianHash(i), 1E-2);
     } 
     for(uint i = 0; i < config.systemInfo.overlap.n_slices; i++){
         double hash = xatu::array2hash(config.systemInfo.overlap.slice(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedOverlapHash(i), 1E-2));
+        EXPECT_NEAR(hash, expectedOverlapHash(i), 1E-2);
     }
 }
 
-TEST_CASE("Wannier90 file parsing", "[wannier_parsing]") {
+TEST(FileParsing, W90fileParsing){
     // Suppress output during test
     std::cout << std::setw(50) << std::left << "Testing Wannier90 file parsing... " << std::endl;
     std::cout.setstate(std::ios_base::failbit);
@@ -202,30 +200,30 @@ TEST_CASE("Wannier90 file parsing", "[wannier_parsing]") {
     };
 
     // --- Validation ---
-    REQUIRE(config.ndim == expectedDim);
-    REQUIRE(config.filling == expectedFilling);
-    REQUIRE(config.mSize == expectedmSize);
-    REQUIRE(config.nFock == expectednFock);
+    EXPECT_EQ(config.ndim, expectedDim);
+    EXPECT_EQ(config.filling, expectedFilling);
+    EXPECT_EQ(config.mSize, expectedmSize);
+    EXPECT_EQ(config.nFock, expectednFock);
 
     for(uint i = 0; i < config.systemInfo.bravaisLattice.n_rows; i++){
         double hash = xatu::array2hash(config.systemInfo.bravaisLattice.row(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedBravaisLatticeHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedBravaisLatticeHash(i), 1E-4);
     }
 
     // double degenHash = xatu::array2hash(arma::vectorise(config.degeneracies));
-    // REQUIRE_THAT(degenHash, Catch::Matchers::WithinAbs(expectedDegenHash), 1E-4);
+    // EXPECT_NEAR(degenHash, expectedDegenHash), 1E-4);
 
     for(uint i = 0; i < config.systemInfo.motif.n_rows; i++){
         double hash = xatu::array2hash(config.systemInfo.motif.row(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedMotifHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedMotifHash(i), 1E-4);
     }
     for(uint i = 0; i < config.systemInfo.bravaisVectors.n_rows; i++){
         double hash = xatu::array2hash(config.systemInfo.bravaisVectors.row(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedBravaisVectorsHash(i), 1E-4));
+        EXPECT_NEAR(hash, expectedBravaisVectorsHash(i), 1E-4);
     }
     for(uint i = 0; i < config.systemInfo.hamiltonian.n_slices; i++){
         double hash = xatu::array2hash(config.systemInfo.hamiltonian.slice(i));
-        REQUIRE_THAT(hash, Catch::Matchers::WithinAbs(expectedHamiltonianHash(i), 1E-2));
+        EXPECT_NEAR(hash, expectedHamiltonianHash(i), 1E-2);
     } 
 
     uint hashIndex = 0;
@@ -233,13 +231,13 @@ TEST_CASE("Wannier90 file parsing", "[wannier_parsing]") {
         for(uint s = 0; s < config.Rhop(i).n_slices; s++) {
             arma::cx_mat slice = config.Rhop(i).slice(s);
             double sliceHash = xatu::array2hash(slice);
-            REQUIRE_THAT(sliceHash, Catch::Matchers::WithinAbs(expectedRhopHash(hashIndex), 1E-2));
+            EXPECT_NEAR(sliceHash, expectedRhopHash(hashIndex), 1E-2);
             hashIndex++;
         }
     }
 }
 
-TEST_CASE("Exciton file parsing", "[excitonfile_parsing]"){
+TEST(FileParsing, ExcitonfileParsing){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing exciton file parsing... " << std::endl;
@@ -253,15 +251,15 @@ TEST_CASE("Exciton file parsing", "[excitonfile_parsing]"){
     int expectedNbands = 1;
     arma::vec expectedDielectric = {1, 1, 10};
 
-    REQUIRE(config.excitonInfo.ncell == expectedNcell);
-    REQUIRE(config.excitonInfo.nbands == expectedNbands);
+    EXPECT_EQ(config.excitonInfo.ncell, expectedNcell);
+    EXPECT_EQ(config.excitonInfo.nbands, expectedNbands);
     for (uint i = 0; i < expectedDielectric.n_elem; i++){
-        REQUIRE(config.excitonInfo.eps(i) == expectedDielectric(i));
+        EXPECT_EQ(config.excitonInfo.eps(i), expectedDielectric(i));
     }
-    REQUIRE(xatu::array2hash(config.excitonInfo.Q) == 0);
+    EXPECT_EQ(xatu::array2hash(config.excitonInfo.Q), 0);
 }
 
-TEST_CASE("Exciton file parsing - anisotropic", "[excitonfile_parsing_anisotropic]"){
+TEST(FileParsing, ExcitonfileParsingAnisotropic){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing anisotropic exciton file parsing... " << std::endl;
@@ -275,16 +273,16 @@ TEST_CASE("Exciton file parsing - anisotropic", "[excitonfile_parsing_anisotropi
     int expectedNbands = 1;
     arma::vec expectedDielectric = {1, 1, 10, 25, 35};
 
-    REQUIRE(config.excitonInfo.ncell == expectedNcell);
-    REQUIRE(config.excitonInfo.nbands == expectedNbands);
+    EXPECT_EQ(config.excitonInfo.ncell, expectedNcell);
+    EXPECT_EQ(config.excitonInfo.nbands, expectedNbands);
     for (uint i = 0; i < expectedDielectric.n_elem; i++){
-        REQUIRE(config.excitonInfo.eps(i) == expectedDielectric(i));
+        EXPECT_EQ(config.excitonInfo.eps(i), expectedDielectric(i));
     }
-    REQUIRE(xatu::array2hash(config.excitonInfo.Q) == 0);
+    EXPECT_EQ(xatu::array2hash(config.excitonInfo.Q), 0);
 
 }
     
-TEST_CASE("TB hBN energies (full diagonalization)", "[tb-hBN-fulldiag]"){
+TEST(hBNTest, FullDiagonalization){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN energies (fulldiag)... " << std::endl;
@@ -308,12 +306,12 @@ TEST_CASE("TB hBN energies (full diagonalization)", "[tb-hBN-fulldiag]"){
     std::vector<std::vector<double>> expectedEnergies = {{5.335690, 2}, 
                                                          {6.074062, 1}};
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
 
-TEST_CASE("TB hBN energies (davidson)", "[tb-hBN-davidson]"){
+TEST(hBNTest, DavidsonDiagonalization){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN energies (Davidson)... " << std::endl;
@@ -337,12 +335,12 @@ TEST_CASE("TB hBN energies (davidson)", "[tb-hBN-davidson]"){
     std::vector<std::vector<double>> expectedEnergies = {{5.335690, 2}, 
                                                          {6.074062, 1}};
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
 
-TEST_CASE("TB hBN energies (Lanczos)", "[hBN-lanczos]"){
+TEST(hBNTest, LanczosDiagonalization){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN energies (Lanczos)... " << std::endl;
@@ -366,12 +364,12 @@ TEST_CASE("TB hBN energies (Lanczos)", "[hBN-lanczos]"){
     std::vector<std::vector<double>> expectedEnergies = {{5.335690, 2}, 
                                                          {6.074062, 1}};
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
 
-TEST_CASE("TB hBN energies (reciprocal)", "[tb-hBN-reciprocal]"){
+TEST(hBNTest, ReciprocalSpaceMethod){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN energies (reciprocal)... " << std::endl;
@@ -398,12 +396,12 @@ TEST_CASE("TB hBN energies (reciprocal)", "[tb-hBN-reciprocal]"){
                                                          {6.236636, 1},
                                                          {6.731819, 1}};
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
 
-TEST_CASE("TB hBN reciprocal w.f.", "[tb-hBN-kwf]"){
+TEST(hBNTest, ReciprocalWavefunction){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN reciprocal w.f... " << std::endl;
@@ -439,11 +437,11 @@ TEST_CASE("TB hBN reciprocal w.f.", "[tb-hBN-kwf]"){
 
     double kwfHash = xatu::array2hash(kwf);
     double expectedKwfHash = 1.086145105;
-    REQUIRE_THAT(kwfHash, Catch::Matchers::WithinAbs(expectedKwfHash, 1E-5));
+    EXPECT_NEAR(kwfHash, expectedKwfHash, 1E-5);
 
 }
 
-TEST_CASE("TB hBN real-space w.f.", "[tb-hBN-rswf]"){
+TEST(hBNTest, RealSpaceWavefunction){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN real-space w.f... " << std::endl;
@@ -485,11 +483,11 @@ TEST_CASE("TB hBN real-space w.f.", "[tb-hBN-rswf]"){
 
     double rswfHash = xatu::array2hash(rswf);
     double expectedRSwfHash = 3.4185866144;
-    REQUIRE_THAT(rswfHash, Catch::Matchers::WithinAbs(expectedRSwfHash, 1E-5));
+    EXPECT_NEAR(rswfHash, expectedRSwfHash, 1E-5);
 
 }
 
-TEST_CASE("TB hBN absorption", "[tb-hBN-kubo]"){
+TEST(hBNTest, Conductivity){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN conductivity... " << std::endl;
@@ -513,11 +511,11 @@ TEST_CASE("TB hBN absorption", "[tb-hBN-kubo]"){
     double cum_norm_vme_ex = arma::accu(norm_vme_ex);
 
     double expectedTotalOscillator = 47.4140064;
-    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
+    EXPECT_NEAR(cum_norm_vme_ex, expectedTotalOscillator, 1E-6);
 
 }
 
-TEST_CASE("TB hBN energies (spinful)", "[tb-hBN-spinful]"){
+TEST(hBNTest, SpinfulSpectrumCalculation){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN spinful... " << std::endl;
@@ -541,12 +539,12 @@ TEST_CASE("TB hBN energies (spinful)", "[tb-hBN-spinful]"){
     std::vector<std::vector<double>> expectedEnergies = {{5.335690, 8}, 
                                                          {6.074062, 4}};
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
     
-TEST_CASE("TB hBN spin", "[tb-hBN-spin]"){
+TEST(hBNTest, SpinProjectionCalculation){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN spin... " << std::endl;
@@ -569,15 +567,15 @@ TEST_CASE("TB hBN spin", "[tb-hBN-spin]"){
 
     for(uint i = 0; i < nstates; i++){
         arma::cx_vec spin = results->spinX(i);
-        REQUIRE(spin.n_elem == 3);
-        REQUIRE_THAT(std::real(spin(0)), Catch::Matchers::WithinAbs(expectedSpin(i), 1E-2));
-        REQUIRE_THAT(std::abs(spin(1)), Catch::Matchers::WithinAbs(0.5, 1E-2));
-        REQUIRE_THAT(std::abs(spin(2)), Catch::Matchers::WithinAbs(0.5, 1E-2));
+        EXPECT_EQ(spin.n_elem, 3);
+        EXPECT_NEAR(std::real(spin(0)), expectedSpin(i), 1E-2);
+        EXPECT_NEAR(std::abs(spin(1)), 0.5, 1E-2);
+        EXPECT_NEAR(std::abs(spin(2)), 0.5, 1E-2);
     }
 
 }
 
-TEST_CASE("DFT hBN", "[dft-hBN]"){
+TEST(hBNTest, DFTCalculation){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing DFT hBN... " << std::endl;
@@ -606,8 +604,8 @@ TEST_CASE("DFT hBN", "[dft-hBN]"){
                                                          {4.442427, 1}};
                                                          
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 
     // Check reciprocal w.f.
@@ -628,7 +626,7 @@ TEST_CASE("DFT hBN", "[dft-hBN]"){
 
     double kwfHash = xatu::array2hash(kwf);
     double expectedKwfHash = 1.0864895707;
-    REQUIRE_THAT(kwfHash, Catch::Matchers::WithinAbs(expectedKwfHash, 1E-5));
+    EXPECT_NEAR(kwfHash, expectedKwfHash, 1E-5);
 
     // Check realspace w.f.
     arma::rowvec holePosition = exciton.system->motif.row(holeIndex).subvec(0, 2) + holeCell;
@@ -652,11 +650,11 @@ TEST_CASE("DFT hBN", "[dft-hBN]"){
 
     double rswfHash = xatu::array2hash(rswf);
     double expectedRSwfHash = 83.2242560463;
-    REQUIRE_THAT(rswfHash, Catch::Matchers::WithinAbs(expectedRSwfHash, 1E-5));
+    EXPECT_NEAR(rswfHash, expectedRSwfHash, 1E-5);
 
 }
 
-TEST_CASE("Wannier hBN", "[w90-hBN]"){
+TEST(hBNTest, WannierCalculation){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing Wannierized hBN... " << std::endl;
@@ -685,8 +683,8 @@ TEST_CASE("Wannier hBN", "[w90-hBN]"){
                                                          {2.834596, 1}};
                                                          
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 
     // check oscillator strength for absorption
@@ -695,7 +693,7 @@ TEST_CASE("Wannier hBN", "[w90-hBN]"){
     double cum_norm_vme_ex = arma::accu(norm_vme_ex);
 
     double expectedTotalOscillator = 103.0325881;
-    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
+    EXPECT_NEAR(cum_norm_vme_ex, expectedTotalOscillator, 1E-6);
 
     // Check reciprocal w.f.
     int nbandsCombinations = exciton.conductionBands.n_elem * exciton.valenceBands.n_elem;
@@ -716,7 +714,7 @@ TEST_CASE("Wannier hBN", "[w90-hBN]"){
 
     double kwfHash = xatu::array2hash(kwf);
     double expectedKwfHash = 1.057666;
-    REQUIRE_THAT(kwfHash, Catch::Matchers::WithinAbs(expectedKwfHash, 1E-5));
+    EXPECT_NEAR(kwfHash, expectedKwfHash, 1E-5);
 
     // Check realspace w.f.
     arma::rowvec holePosition = exciton.system->motif.row(holeIndex).subvec(0, 2) + holeCell;
@@ -740,11 +738,11 @@ TEST_CASE("Wannier hBN", "[w90-hBN]"){
 
     double rswfHash = xatu::array2hash(rswf);
     double expectedRSwfHash = 1.003540;
-    REQUIRE_THAT(rswfHash, Catch::Matchers::WithinAbs(expectedRSwfHash, 1E-5));
+    EXPECT_NEAR(rswfHash, expectedRSwfHash, 1E-5);
 
 }
 
-TEST_CASE("TB hBN-ani energies (full diagonalization)", "[tb-hBN-ani-fulldiag]"){
+TEST(hBNTest, AnisotropicSpectrumCalculation){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN-ani energies (fulldiag)... " << std::endl;
@@ -770,12 +768,12 @@ TEST_CASE("TB hBN-ani energies (full diagonalization)", "[tb-hBN-ani-fulldiag]")
                                                          {6.732466, 1}};
 
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
 
-TEST_CASE("TB hBN absorption - anisotropic", "[tb-hBN-kubo-ani]"){
+TEST(hBNTest, AnisotropicConductivity){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing TB hBN anisotropic conductivity... " << std::endl;
@@ -799,11 +797,11 @@ TEST_CASE("TB hBN absorption - anisotropic", "[tb-hBN-kubo-ani]"){
     double cum_norm_vme_ex = arma::accu(norm_vme_ex);
 
     double expectedTotalOscillator = 47.4140064;
-    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
+    EXPECT_NEAR(cum_norm_vme_ex, expectedTotalOscillator, 1E-6);
 
 }
 
-TEST_CASE("MoS2 energies", "[MoS2-energies]"){
+TEST(MoS2Test, FullDiagonalization){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing MoS2 energies... " << std::endl;
@@ -827,12 +825,12 @@ TEST_CASE("MoS2 energies", "[MoS2-energies]"){
     std::vector<std::vector<double>> expectedEnergies = {{1.768783, 2}, 
                                                          {1.780562, 2}};
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
 
-TEST_CASE("MoS2 reciprocal w.f.", "[MoS2-kwf]"){
+TEST(MoS2Test, ReciprocalWavefunction){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing MoS2 reciprocal w.f... " << std::endl;
@@ -868,11 +866,11 @@ TEST_CASE("MoS2 reciprocal w.f.", "[MoS2-kwf]"){
 
     double kwfHash = xatu::array2hash(kwf);
     double expectedKwfHash = 1.1814790902;
-    REQUIRE_THAT(kwfHash, Catch::Matchers::WithinAbs(expectedKwfHash, 1E-5));
+    EXPECT_NEAR(kwfHash, expectedKwfHash, 1E-5);
 
 }
 
-TEST_CASE("MoS2 spin", "[MoS2-spin]"){
+TEST(MoS2Test, SpinProjectionCalculation){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing MoS2 spin... " << std::endl;
@@ -903,13 +901,13 @@ TEST_CASE("MoS2 spin", "[MoS2-spin]"){
         arma::cx_vec spin = results->spinX(i);
         for(uint j = 0; j < 3; j++){
             double spinValue = real(spin(j));
-            REQUIRE_THAT(spinValue, Catch::Matchers::WithinAbs(expectedSpin(i, j), 1E-4));
+            EXPECT_NEAR(spinValue, expectedSpin(i, j), 1E-4);
         }
     }
 
 }
 
-TEST_CASE("MoS2 exciton bands", "[MoS2-Q]"){
+TEST(MoS2Test, ExcitonBands){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing MoS2 exciton bands... " << std::endl;
@@ -945,12 +943,12 @@ TEST_CASE("MoS2 exciton bands", "[MoS2-Q]"){
                                                          {1.780106, 2},
                                                          {1.810464, 2}};
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-5));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-5);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
 
-TEST_CASE("MoS2 exchange", "[MoS2-exchange]"){
+TEST(MoS2Test, ExchangeCalculation){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing MoS2 with exchange... " << std::endl;
@@ -977,12 +975,12 @@ TEST_CASE("MoS2 exchange", "[MoS2-exchange]"){
                                                          {1.825740, 1},
                                                          {1.855544, 1}};
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-5));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-5);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
 
-TEST_CASE("MoS2 reduced BZ", "[MoS2-reducedBZ]"){
+TEST(MoS2Test, ReducedBZCalculation){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing MoS2 with reduced BZ... " << std::endl;
@@ -1011,12 +1009,12 @@ TEST_CASE("MoS2 reduced BZ", "[MoS2-reducedBZ]"){
                                                          {1.935880, 1},
                                                          {1.950567, 1}};
     for(uint i = 0; i < energies.size(); i++){
-        REQUIRE_THAT(energies[i][0], Catch::Matchers::WithinAbs(expectedEnergies[i][0], 1E-4));
-        REQUIRE(energies[i][1] == expectedEnergies[i][1]);
+        EXPECT_NEAR(energies[i][0], expectedEnergies[i][0], 1E-4);
+        EXPECT_EQ(energies[i][1], expectedEnergies[i][1]);
     }
 }
 
-TEST_CASE("MoS2 absorption", "[MoS2-kubo]"){
+TEST(MoS2Test, Conductivity){
 
     std::cout.clear();
     std::cout << std::setw(50) << std::left << "Testing MoS2 conductivity... " << std::endl;
@@ -1040,7 +1038,12 @@ TEST_CASE("MoS2 absorption", "[MoS2-kubo]"){
     double cum_norm_vme_ex = arma::accu(norm_vme_ex);
 
     double expectedTotalOscillator = 37.2822837;
-    REQUIRE_THAT(cum_norm_vme_ex, Catch::Matchers::WithinAbs(expectedTotalOscillator, 1E-6));
+    EXPECT_NEAR(cum_norm_vme_ex, expectedTotalOscillator, 1E-6);
 
 }
 
+
+int main(int argc, char **argv) {
+    ::testing::InitGoogleTest(&argc, argv);
+    return RUN_ALL_TESTS();
+}

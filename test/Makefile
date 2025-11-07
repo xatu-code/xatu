@@ -16,7 +16,7 @@ ROOT_DIR := $(shell dirname $(PWD))
 INCLUDE = -I$(ROOT_DIR)/include -I$(ROOT_DIR)/test
 
 # Libraries
-LIBS = -DARMA_DONT_USE_WRAPPER -L$(ROOT_DIR) -L$(ROOT_DIR)/test -lxatu -larmadillo -lopenblas -llapack -larpack -fopenmp -lgfortran
+LIBS = -DARMA_DONT_USE_WRAPPER -L$(ROOT_DIR) -L$(ROOT_DIR)/test -lxatu -lgtest -larmadillo -lopenblas -llapack -larpack -fopenmp -lgfortran
 
 dummy_bin_folder := $(shell mkdir -p bin)
 
